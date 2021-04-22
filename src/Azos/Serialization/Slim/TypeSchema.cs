@@ -80,7 +80,7 @@ namespace Azos.Serialization.Slim
     private List<MethodInfo> m_MethodsOnDeserializing;
     private List<MethodInfo> m_MethodsOnDeserialized;
 
-    public void SerializeInstance(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext)
+    public void SerializeInstance(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork = false)
     {
       if (m_MethodsOnSerializing!=null)
         invokeAttributedMethods(m_MethodsOnSerializing, instance, streamingContext);
@@ -95,7 +95,7 @@ namespace Azos.Serialization.Slim
           var info = new SerializationInfo(Type, new FormatterConverter());
           isz.GetObjectData(info, streamingContext);
 
-          serializeInfo(writer, registry, refs, info, streamingContext);
+          serializeInfo(writer, registry, refs, info, streamingContext, serializationForFrameWork);
       }
 
       if (m_MethodsOnSerialized!=null)
@@ -277,17 +277,17 @@ namespace Azos.Serialization.Slim
       return Expression.Lambda<dyn_serialize>(body, pSchema, pWriter, pTReg, pRefs, pInstance, pStreamingContext).Compile();
     }
 
-      private void serializeInfo(SlimWriter writer, TypeRegistry registry, RefPool refs, SerializationInfo info, StreamingContext streamingContext)
+      private void serializeInfo(SlimWriter writer, TypeRegistry registry, RefPool refs, SerializationInfo info, StreamingContext streamingContext, bool serializationForFrameWork)
       {
-          writer.Write(registry.GetTypeHandle( info.ObjectType ));//20171223 DKh
+          writer.Write(registry.GetTypeHandle( info.ObjectType, serializationForFrameWork ));//20171223 DKh
           writer.Write(info.MemberCount);
 
           var senum = info.GetEnumerator();
           while(senum.MoveNext())
           {
             writer.Write(senum.Name);
-            writer.Write( registry.GetTypeHandle( senum.ObjectType ) );
-            Schema.Serialize(writer, registry, refs, senum.Value, streamingContext);
+            writer.Write( registry.GetTypeHandle( senum.ObjectType, serializationForFrameWork ) );
+            Schema.Serialize(writer, registry, refs, senum.Value, streamingContext, serializationForFrameWork);
           }
       }
 
@@ -556,7 +556,7 @@ namespace Azos.Serialization.Slim
     }
 
 
-    public void Serialize(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, Type valueType = null)
+    public void Serialize(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork, Type valueType = null)
     {
 
       Type type = valueType;
@@ -575,7 +575,7 @@ namespace Azos.Serialization.Slim
 
           //Write type name. Full or compressed. Full Type names are assembly-qualified strings, compressed are string in form of
           // $<name_table_index> i.e.  $1 <--- get string[1]
-          typeHandle = registry.GetTypeHandle(type);
+          typeHandle = registry.GetTypeHandle(type, serializationForFrameWork);
           writer.Write( typeHandle );
       }
 
@@ -594,15 +594,15 @@ namespace Azos.Serialization.Slim
         writer.Write( Arrays.ArrayToDescriptor((Array)instance, type, typeHandle) );
       }
 
-      td.SerializeInstance(writer, registry, refs, instance, streamingContext);
+      td.SerializeInstance(writer, registry, refs, instance, streamingContext, serializationForFrameWork);
     }
 
 
-    public void writeRefMetaHandle(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext)
+    public void writeRefMetaHandle(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork)
     {
         Type tInstance;
 
-        var mh = refs.GetHandle(instance, registry, Format, out tInstance);
+        var mh = refs.GetHandle(instance, registry, Format, out tInstance, serializationForFrameWork);
         writer.Write(mh);
 
         if (mh.IsInlinedValueType)
@@ -611,7 +611,7 @@ namespace Azos.Serialization.Slim
           if (wa!=null)
             wa(writer, instance);
           else
-            this.Serialize(writer, registry, refs, instance, streamingContext);
+            this.Serialize(writer, registry, refs, instance, streamingContext, serializationForFrameWork);
         }
         else
         if (mh.IsInlinedRefType)

@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Azos.IO;
+using System.Runtime.CompilerServices;
 
 namespace Azos.Serialization.Slim
 {
@@ -431,34 +432,48 @@ namespace Azos.Serialization.Slim
                }
 
 
-               /// <summary>
-               /// Returns a string with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
-               /// </summary>
-               public string GetTypeHandleAsString(Type type)
-               {
-                 bool added;
-                 var idx = getTypeIndex(type, out added);
-                 if (!added)
-                 {
-                   if (idx<STR_HNDL_POOL_SIZE) return STR_HNDL_POOL[idx];
-                   return '$'+idx.ToString();
-                 }
+    /// <summary>
+    /// Returns a string with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
+    /// </summary>
+    public string GetTypeHandleAsString(Type type, bool portableSerialization)
+    {
+      bool added;
+      var idx = getTypeIndex(type, out added);
+      if (!added)
+      {
+        if (idx<STR_HNDL_POOL_SIZE) return STR_HNDL_POOL[idx];
+        return '$'+idx.ToString();
+      }
 
-                 return type.AssemblyQualifiedName;
-               }
+      if (portableSerialization)
+        return type.AssemblyQualifiedName.Replace(
+          "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+          "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          );
 
-               /// <summary>
-               /// Returns a VarIntStr with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
-               /// </summary>
-               public VarIntStr GetTypeHandle(Type type)
-               {
-                 bool added;
-                 var idx = getTypeIndex(type, out added);
-                 if (!added)
-                   return new VarIntStr( (uint)idx);
+      return type.AssemblyQualifiedName;
+    }
 
-                 return new VarIntStr( type.AssemblyQualifiedName );
-               }
+
+
+    /// <summary>
+    /// Returns a VarIntStr with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
+    /// </summary>
+    public VarIntStr GetTypeHandle(Type type, bool serializationForFrameWork)
+    {
+      bool added;
+      var idx = getTypeIndex(type, out added);
+      if (!added)
+        return new VarIntStr( (uint)idx);
+
+      if(serializationForFrameWork)
+        return new VarIntStr(type.AssemblyQualifiedName.Replace(
+          "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e", 
+          "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          ));
+
+      return new VarIntStr( type.AssemblyQualifiedName );
+    }
 
 
 

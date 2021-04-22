@@ -105,7 +105,7 @@ namespace Azos.Serialization.Slim
        /// Emits inlined string for strings and inlined value types for boxed objects.
        /// Emits additional array dimensions info for array refernces who's types are emitted for the first time
        /// </summary>
-       public MetaHandle GetHandle(object reference, TypeRegistry treg, SlimFormat format, out Type type)
+       public MetaHandle GetHandle(object reference, TypeRegistry treg, SlimFormat format, out Type type, bool serializationForFrameWork)
        {
          Debug.Assert(m_Mode == SerializationOperation.Serializing, "GetHandle() called while deserializing", DebugAction.Throw);
 
@@ -124,14 +124,14 @@ namespace Azos.Serialization.Slim
 
          if (reference is Type)
          {
-           var thandle = treg.GetTypeHandle(reference as Type);
+           var thandle = treg.GetTypeHandle(reference as Type, serializationForFrameWork);
            return MetaHandle.InlineTypeValue(thandle);
          }
 
 
          if (type.IsValueType)
          {
-           var vth = treg.GetTypeHandle(type);
+           var vth = treg.GetTypeHandle(type, serializationForFrameWork);
            return MetaHandle.InlineValueType(vth);
          }
 
@@ -141,7 +141,7 @@ namespace Azos.Serialization.Slim
 
          if (added)
          {
-              var th =  treg.GetTypeHandle(type);
+              var th =  treg.GetTypeHandle(type, serializationForFrameWork);
 
               if (format.IsRefTypeSupported(type))//20150305 Refhandle inline
                 return MetaHandle.InlineRefType(th);

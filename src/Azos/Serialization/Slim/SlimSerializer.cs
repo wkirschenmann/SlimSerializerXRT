@@ -170,6 +170,8 @@ namespace Azos.Serialization.Slim
                private int m_SerializeNestLevel;
                private SlimWriter m_CachedWriter;
 
+            public bool SerializeForFramework { get; set; } = false;
+
             public void Serialize(Stream stream, object root)
             {
                 try
@@ -196,7 +198,7 @@ namespace Azos.Serialization.Slim
                      m_SerializeNestLevel++;
                      writer.BindStream( stream );
 
-                     serialize(writer, root, pool);
+                     serialize(writer, root, pool, SerializeForFramework);
                     }
                     finally
                     {
@@ -211,8 +213,8 @@ namespace Azos.Serialization.Slim
                 }
             }
 
-               private int m_DeserializeNestLevel;
-               private SlimReader m_CachedReader;
+            private int m_DeserializeNestLevel;
+            private SlimReader m_CachedReader;
 
             public object Deserialize(Stream stream)
             {
@@ -298,7 +300,7 @@ namespace Azos.Serialization.Slim
             }
 
 
-            private void serialize(SlimWriter writer, object root, RefPool pool)
+            private void serialize(SlimWriter writer, object root, RefPool pool, bool serializationForFrameWork)
             {
                if (root is Type)
                  root = new rootTypeBox{ TypeValue = (Type)root};
@@ -324,7 +326,7 @@ namespace Azos.Serialization.Slim
                  if (!isValType && root!=null)
                    pool.Add(root);
 
-                 m_Format.TypeSchema.Serialize(writer, registry, pool, root, scontext);
+                 m_Format.TypeSchema.Serialize(writer, registry, pool, root, scontext, serializationForFrameWork);
 
 
                  if (root==null) return;
@@ -342,7 +344,7 @@ namespace Azos.Serialization.Slim
                     var instance = pool[i];
                     var tinst = instance.GetType();
                     if (!m_Format.IsRefTypeSupported(tinst))
-                      ts.Serialize(writer, registry, pool, instance, scontext);
+                      ts.Serialize(writer, registry, pool, instance, scontext, serializationForFrameWork);
                  }
 
             }
