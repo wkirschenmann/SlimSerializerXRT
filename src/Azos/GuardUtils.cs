@@ -14,7 +14,7 @@ namespace Azos
   /// Guards are typically applied to method parameters in a fluent manner
   /// </summary>
   [Serializable]
-  public class CallGuardException : AzosException, IHttpStatusProvider
+  public class CallGuardException : AzosException
   {
     public const string DETAILS_FLD_NAME = "GUARD-DETAILS";
     public const string SITE_FLD_NAME = "GUARD-SITE";
@@ -47,10 +47,6 @@ namespace Azos
 
     /// <summary>Name of parameter such as method parameter</summary>
     public string ParamName { get; set; }
-
-    public virtual int HttpStatusCode => WebConsts.STATUS_400;
-
-    public virtual string HttpStatusDescription => WebConsts.STATUS_400_DESCRIPTION + (PutDetailsInHttpStatus ? ": "+this.ToMessageWithType() : string.Empty);
 
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
@@ -272,26 +268,6 @@ namespace Azos
                                   name,
                                   StringConsts.GUARDED_CLAUSE_TYPECAST_ERROR
                                               .Args(callSite ?? CoreConsts.UNKNOWN, name ?? CoreConsts.UNKNOWN, typeof(TResult).DisplayNameWithExpandedGenericArgs()));
-    }
-
-    /// <summary>
-    /// Ensures that a config node value is non-null existing node
-    /// </summary>
-    public static T NonEmpty<T>(this T node,
-                                string name = null,
-                               [CallerFilePath]   string callFile = null,
-                               [CallerLineNumber] int callLine = 0,
-                               [CallerMemberName] string callMember = null) where T : Conf.IConfigNode
-    {
-      if (node==null || !node.Exists)
-      {
-        var callSite = callSiteOf(callFile, callLine, callMember);
-        throw new CallGuardException(callSite,
-                                 name,
-                                 StringConsts.GUARDED_CONFIG_NODE_CLAUSE_MAY_NOT_BE_EMPTY_ERROR
-                                             .Args(callSite ?? CoreConsts.UNKNOWN, name ?? CoreConsts.UNKNOWN));
-      }
-      return node;
     }
 
     /// <summary>

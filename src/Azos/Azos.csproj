@@ -27,8 +27,6 @@
 
   <ItemGroup>
     <None Remove="BUILD_INFO.txt" />
-    <None Remove="Text\ConanDoyle.txt" />
-    <None Remove="Text\JackLondon.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,8 +36,6 @@
   <ItemGroup>
     <!--EmbeddedResource Include="BUILD_INFO.txt" /-->
     <EmbeddedResource Include="BUILD_INFO.txt" />
-    <EmbeddedResource Include="Text\ConanDoyle.txt" />
-    <EmbeddedResource Include="Text\JackLondon.txt" />
   </ItemGroup>
 
   <ItemGroup>

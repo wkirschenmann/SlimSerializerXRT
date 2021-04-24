@@ -7,9 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 using Azos.IO;
@@ -17,18 +15,18 @@ using Azos.IO;
 
 namespace Azos.Serialization.Slim
 {
-    /// <summary>
-    /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) paremeter.
-    /// This class was designed for highly-efficient serialization of types without versioning.
-    /// SlimSerializer supports a concept of "known types" that save space by not emitting their names into stream.
-    /// Performance note:
-    /// This serializer yields on average 1/4 serialization and 1/2 deserialization times while compared to BinaryFormatter.
-    /// Serialization of Record-instances usually takes 1/6 of BinaryFormatter time.
-    /// Format takes 1/10 space for records and 1/2 for general object graphs.
-    /// Such performance is achieved because of dynamic compilation of type-specific serialization/deserialization methods.
-    /// This type is thread-safe for serializations/deserializations when TypeMode is set to "PerCall"
-    /// </summary>
-    [SlimSerializationProhibited]
+  /// <summary>
+  /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) paremeter.
+  /// This class was designed for highly-efficient serialization of types without versioning.
+  /// SlimSerializer supports a concept of "known types" that save space by not emitting their names into stream.
+  /// Performance note:
+  /// This serializer yields on average 1/4 serialization and 1/2 deserialization times while compared to BinaryFormatter.
+  /// Serialization of Record-instances usually takes 1/6 of BinaryFormatter time.
+  /// Format takes 1/10 space for records and 1/2 for general object graphs.
+  /// Such performance is achieved because of dynamic compilation of type-specific serialization/deserialization methods.
+  /// This type is thread-safe for serializations/deserializations when TypeMode is set to "PerCall"
+  /// </summary>
+  [SlimSerializationProhibited]
     public class SlimSerializer : ISlimSerializer
     {
         #region CONSTS

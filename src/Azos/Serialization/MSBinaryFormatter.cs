@@ -4,18 +4,14 @@
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Azos.Serialization
 {
-    /// <summary>
-    /// Implements ISerializer with Ms BinaryFormatter
-    /// </summary>
-    public class MSBinaryFormatter : ISerializer
+  /// <summary>
+  /// Implements ISerializer with Ms BinaryFormatter
+  /// </summary>
+  public class MSBinaryFormatter : ISerializer
     {
       private BinaryFormatter m_Formatter = new BinaryFormatter();
 

@@ -6,10 +6,6 @@
 
 using System;
 
-
-
-using Azos.Serialization.JSON;
-
 namespace Azos.IO
 {
   /// <summary>
@@ -580,8 +576,7 @@ namespace Azos.IO
     {
       //Prior to 20150626 DKh
       //this.Write(value.ToBinary());
-
-      m_Stream.WriteBEUInt64( (ulong)value.Ticks );
+      m_Stream.WriteBEUInt64((ulong)value.Ticks );
       m_Stream.WriteByte( (byte)value.Kind );
     }
 
@@ -629,73 +624,6 @@ namespace Azos.IO
       this.Write(false);
     }
 
-    public override void Write(Data.GDID value)
-    {
-      this.Write(value.Era);
-      this.Write(value.ID);
-    }
-
-    public override void Write(Data.GDID? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
-
-    public override void Write(Azos.Glue.Protocol.TypeSpec spec)
-    {
-        this.Write( spec.m_Name );
-        m_Stream.WriteBEUInt64( spec.m_Hash );
-    }
-
-    public override void Write(Azos.Glue.Protocol.MethodSpec spec)
-    {
-        this.Write( spec.m_MethodName );
-        m_Stream.WriteBEUInt64( spec.m_ReturnType );
-        this.Write( spec.m_Signature );
-        m_Stream.WriteBEUInt64( spec.m_Hash );
-    }
-
-
-    public override void Write(FID value)
-    {
-      m_Stream.WriteBEUInt64( value.ID );
-    }
-
-    public override void Write(FID? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
-    public override void Write(Pile.PilePointer value)
-    {
-      this.Write(value.NodeID);
-      this.Write(value.Segment);
-      this.Write(value.Address);
-    }
-
-    public override void Write(Pile.PilePointer? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
     public override void Write(VarIntStr value)
     {
       this.Write(value.StringValue);
@@ -704,87 +632,6 @@ namespace Azos.IO
     }
 
     public override void Write(VarIntStr? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
-    public override void Write(NLSMap map)
-    {
-      if (map.m_Data==null)
-      {
-        this.Write((ushort)0);
-        return;
-      }
-
-      this.Write((ushort)map.m_Data.Length);
-      for(var i=0; i<map.m_Data.Length; i++)
-      {
-        var nd = map.m_Data[i];
-        this.Write(nd.ISO);
-        this.Write(nd.Name);
-        this.Write(nd.Description);
-      }
-    }
-
-    public override void Write(NLSMap? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
-    public override void Write(Financial.Amount value)
-    {
-      this.Write(value.ISO);
-      this.Write(value.Value);
-    }
-
-    public override void Write(Financial.Amount? value)
-    {
-      if (value.HasValue)
-      {
-        this.Write(true);
-        Write(value.Value);
-        return;
-      }
-      this.Write(false);
-    }
-
-    public override void Write(Collections.StringMap map)
-    {
-      if (map==null)
-      {
-        this.Write(false);
-        return;
-      }
-
-      this.Write(true);
-      this.Write(map.CaseSensitive);
-      this.Write((int)map.Count);
-
-      foreach(var kvp in map)
-      {
-        this.Write(kvp.Key);
-        this.Write(kvp.Value);
-      }
-    }
-
-    public override void Write(Atom value)
-    {
-      this.Write(value.ID);
-    }
-
-    public override void Write(Atom? value)
     {
       if (value.HasValue)
       {

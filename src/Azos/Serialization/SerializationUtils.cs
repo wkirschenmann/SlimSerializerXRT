@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Linq.Expressions;
 
-using Azos.Serialization.JSON;
 using System.Threading;
 
 namespace Azos.Serialization
@@ -87,8 +86,7 @@ namespace Azos.Serialization
                                   BindingFlags.Public)
                       //DKh 20130801 removed readonly constraint
                       //DKh 20181129 filter-out Inject fields
-                      .Where(fi => !fi.IsNotSerialized &&
-                                    !Attribute.IsDefined(fi, typeof(Apps.Injection.InjectAttribute)))
+                      .Where(fi => !fi.IsNotSerialized)
                       .OrderBy( fi => fi.Name )//DKh 20130730
                       .ToArray();
 
@@ -212,30 +210,6 @@ namespace Azos.Serialization
 
       var idxs = new int[rank];
       doDimensionSetValue<T>(arr, idxs, 0, each);
-    }
-
-    /// <summary>
-    /// Navigates through JSON datamap by subsequent node names.
-    /// </summary>
-    /// <returns>
-    /// null if navigation path is not exists.
-    /// JSONDataMap if navigation ends up with non-leaf node.
-    /// object if navigation ends up with leaf node.</returns>
-    public static object GetNodeByPath(this JsonDataMap json, params string[] nodeNames)
-    {
-      object node = null;
-      for (int i=0; i<nodeNames.Length; i++)
-      {
-          if (json == null || !json.TryGetValue(nodeNames[i], out node))
-              return null;
-
-          if (i == nodeNames.Length - 1)
-              return node;
-
-          json = node as JsonDataMap;
-      }
-
-      return null;
     }
 
 

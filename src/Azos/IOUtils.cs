@@ -17,32 +17,6 @@ using System.Text;
 namespace Azos
 {
 
-  /// <summary>
-  /// Format of the String Dump
-  /// </summary>
-  public enum DumpFormat
-  {
-    /// <summary>
-    /// Perform no conversion - data copied as is
-    /// </summary>
-    Binary,
-
-    /// <summary>
-    /// Decimal string representation. E.g. "&lt;&lt;39, 16, 25, ...>>"
-    /// </summary>
-    Decimal,
-
-    /// <summary>
-    /// Hex string representation. E.g. "A1 B9 16 ..."
-    /// </summary>
-    Hex,
-
-    /// <summary>
-    /// Human readable string representation. E.g. "...Test 123\n..."
-    /// </summary>
-    Printable
-  }
-
 
   /// <summary>
   /// Provides IO-related utility extensions
@@ -244,87 +218,6 @@ namespace Azos
       {
         return md5.ComputeHash(input);
       }
-    }
-
-
-    /// <summary>
-    /// Convert a buffer to a printable string
-    /// </summary>
-    /// <param name="buf">Buffer to convert</param>
-    /// <param name="fmt">Dumping format</param>
-    /// <param name="offset">Starting index</param>
-    /// <param name="count">Number of bytes to process (-1 means all bytes in the buffer)</param>
-    /// <param name="eol">If true, terminate with end-of-line</param>
-    /// <param name="encoding">Encoding to use for writing data in Binary format</param>
-    /// <param name="maxLen">Max length of the returned string. Pass 0 for unlimited length</param>
-    /// <returns>String dump</returns>
-    public static string ToDumpString(this byte[] buf, DumpFormat fmt, int offset = 0,
-        int count = -1, bool eol = false, Encoding encoding = null, int maxLen = 0)
-    {
-      if (count == -1) count = buf.Length - offset;
-
-      int n;
-
-      switch (fmt)
-      {
-        case DumpFormat.Decimal: n = count * 4 + 4; break;
-        case DumpFormat.Hex: n = count * 3; break;
-        case DumpFormat.Printable: n = count * 4; break;
-        default: throw new AzosException(StringConsts.OPERATION_NOT_SUPPORTED_ERROR + fmt.ToString());
-      }
-
-      var sb = new StringBuilder(n);
-
-      int k = offset + count;
-      int m = maxLen > 0 ? Math.Max(2, maxLen) : Int16.MaxValue;
-      bool shrink = maxLen > 0;
-
-      switch (fmt)
-      {
-        case DumpFormat.Decimal:
-          m -= 2;
-          sb.Append("<<");
-          for (int i = offset; i < k && sb.Length + 1/*comma*/ < m; i++)
-          {
-            sb.Append(buf[i]);
-            sb.Append(',');
-          }
-          if (sb.Length > 2)
-            sb.Remove(sb.Length - 1, 1);
-          sb.Append(!shrink || sb.Length + 1 < m ? ">>" : "...>>");
-          break;
-        case DumpFormat.Hex:
-          m -= 3;
-          for (int i = offset, j = 0; i < k && sb.Length < m; i++, j++)
-            sb.AppendFormat("{0:X2}{1}", buf[i], (j & 3) == 3 ? " " : "");
-          if (sb.Length > 0 && sb[sb.Length - 1] == ' ')
-            sb.Remove(sb.Length - 1, 1);
-          if (shrink) sb.Append("...");
-          break;
-        case DumpFormat.Printable:
-          m -= 3;
-          for (int i = offset; i < k && sb.Length < m; i++)
-          {
-            byte c = buf[i];
-            if (c >= 32 && c < 127)
-              sb.Append((char)c);
-            else
-              switch (c)
-              {
-                case 10: sb.Append("\n"); break;
-                case 13: sb.Append("\r"); break;
-                case 8: sb.Append("\t"); break;
-                default: sb.AppendFormat("\\{0,3:D3}", c); break;
-              }
-          }
-          if (shrink) sb.Append("...");
-          break;
-      }
-
-      if (eol)
-        sb.Append('\n');
-
-      return sb.ToString();
     }
 
 
@@ -1153,15 +1046,6 @@ namespace Azos
     }
 
     /// <summary>
-    /// Creates directory and immediately grants it accessibility rules for everyone if it does not exists,
-    ///  or returns the existing directory
-    /// </summary>
-    public static DirectoryInfo EnsureAccessibleDirectory(string path)
-    {
-      return Azos.Platform.Abstraction.PlatformAbstractionLayer.FileSystem.EnsureAccessibleDirectory(path);
-    }
-
-    /// <summary>
     /// Returns true if both buffers contain the same number of the same bytes.
     /// The implementation uses quad-word comparison as much as possible for speed.
     /// Requires UNSAFE switch. True if both buffers are null
@@ -1323,41 +1207,6 @@ namespace Azos
       var praw = (ulong*)&result;
       praw[0] = s1;
       praw[1] = s2;
-      return result;
-    }
-
-    /// <summary>
-    /// Efficiently encodes guid into existing byte[] using re-casting thus avoiding extra copies and allocations
-    /// </summary>
-    public static unsafe void FastEncodeGuid(this byte[] buff, int offset, Guid value)
-    {
-      Aver.IsTrue(buff.NonNull(nameof(buff)).Length - offset >= 16, nameof(FastEncodeGuid));
-
-      fixed (byte* pBuff = buff)
-      {
-        var pfrom = (long*)&value;
-        var pto = (long*)(pBuff + offset);
-        pto[0] = pfrom[0];
-        pto[1] = pfrom[1];
-      }
-    }
-
-    /// <summary>
-    /// Efficiently decodes guid from the existing byte[] using re-casting thus avoiding extra copies and allocations
-    /// </summary>
-    public static unsafe Guid FastDecodeGuid(this byte[] buff, int offset)
-    {
-      Aver.IsTrue(buff.NonNull(nameof(buff)).Length - offset >= 16, nameof(FastDecodeGuid));
-
-      var result = Guid.Empty;
-      fixed (byte* pBuff = buff)
-      {
-        var pto = (long*)&result;
-        var pfrom = (long*)(pBuff + offset);
-        pto[0] = pfrom[0];
-        pto[1] = pfrom[1];
-      }
-
       return result;
     }
 

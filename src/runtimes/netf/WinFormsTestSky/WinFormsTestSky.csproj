@@ -139,29 +139,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Azos.Sky\Azos.Sky.csproj">
-      <Project>{56467e57-0c42-42c9-b9b0-359a2a061ba0}</Project>
-      <Name>Azos.Sky</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Azos.Wave\Azos.Wave.csproj">
-      <Project>{26e0a0e2-9eb5-4905-a9b2-df5b08e0121c}</Project>
-      <Name>Azos.Wave</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Azos.Web\Azos.Web.csproj">
-      <Project>{9902d057-8385-44a8-b4c1-053e17ac7fe7}</Project>
-      <Name>Azos.Web</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Azos\Azos.csproj">
       <Project>{c2bf5275-c8c2-46cc-86c7-a83a75c2be0d}</Project>
       <Name>Azos</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\providers\Azos.MongoDb\Azos.MongoDb.csproj">
-      <Project>{b3831368-8b6f-4eb6-afc8-8d52609fb6a4}</Project>
-      <Name>Azos.MongoDb</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\providers\Azos.Sky.MongoDb\Azos.Sky.MongoDb.csproj">
-      <Project>{32c6dcc7-5e9d-4d87-af56-6f690135f19a}</Project>
-      <Name>Azos.Sky.MongoDb</Name>
     </ProjectReference>
     <ProjectReference Include="..\Azos.Platform.NetFramework\Azos.Platform.NetFramework.csproj">
       <Project>{9a912017-d9c0-4739-a725-2ca4c9e9e63b}</Project>

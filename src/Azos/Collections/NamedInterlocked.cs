@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-using Azos.Financial;
-
 namespace Azos.Collections
 {
   /// <summary>
@@ -64,37 +62,6 @@ namespace Azos.Collections
       return m_Data.Select(s => new KeyValuePair<string, long>(s.Name, s.Long));
     }
 
-    /// <summary>
-    /// Enumerates all named amounts. This operation is thread-safe, and returns a snapshot of the instance taken at the time of the first call
-    /// If exchange is specified, atomically flips the value of every slot
-    /// </summary>
-    public IEnumerable<KeyValuePair<string, Amount>> SnapshotAllAmounts(decimal? exchange = null)
-    {
-      if (exchange.HasValue)
-      {
-        var xchg = convertDecimalToLong(exchange.Value);
-        return m_Data.Select(s => new KeyValuePair<string, Amount>(s.Name,  new Amount(s.Name, convertLongToDecimal(Interlocked.Exchange(ref s.Long, xchg)))) );
-      }
-
-      return m_Data.Select(s => new KeyValuePair<string, Amount>(s.Name, new Amount(s.Name, convertLongToDecimal(s.Long))));
-    }
-
-    /// <summary>
-    /// Records a snapshot of all longs converted into TDatum. The TDatum must have a public .ctor(string, long) or runtime exception is thrown
-    /// (this is because C# does not have a contract/constraint for parameterized constructors)
-    /// </summary>
-    public void SnapshotAllLongsInto<TDatum>(Instrumentation.IInstrumentation instrumentation, long? exchange = null) where TDatum : Instrumentation.Datum
-    {
-      if (instrumentation==null)
-        throw new AzosException(StringConsts.ARGUMENT_ERROR+"{0}.{1}(instr==null)".Args(nameof(NamedInterlocked), nameof(SnapshotAllLongsInto)));
-
-      foreach(var slot in SnapshotAllLongs(exchange))
-      {
-        var datum = (Instrumentation.Datum)Activator.CreateInstance(typeof(TDatum), slot.Key, slot.Value);
-        instrumentation.Record( datum );
-      }
-    }
-
 
     /// <summary>
     /// Deletes all state for all slots
@@ -138,12 +105,6 @@ namespace Azos.Collections
     {
       var slot = getSlot(name);
       return Interlocked.Add(ref slot.Long, arg);
-    }
-
-    public Amount Add(Amount arg)
-    {
-      var slot = getSlot(arg.ISO.Value);
-      return new Amount(arg.ISO, Interlocked.Add(ref slot.Long, convertDecimalToLong(arg.Value)));
     }
 
     /// <summary>

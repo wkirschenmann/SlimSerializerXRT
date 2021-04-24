@@ -5,15 +5,13 @@
 </FILE_LICENSE>*/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using Azos.IO;
 
 namespace Azos.Serialization.Slim
 {
-    internal static class Arrays
+  internal static class Arrays
     {
           /// <summary>
           /// Maximum number of supported array dimensions.

@@ -7,8 +7,6 @@
 using System;
 using System.Text;
 
-using Azos.Serialization.JSON;
-
 namespace Azos.IO
 {
   /// <summary>
@@ -100,31 +98,8 @@ namespace Azos.IO
     public abstract void Write(Guid value);
     public abstract void Write(Guid? value);
 
-    public abstract void Write(Data.GDID value);
-    public abstract void Write(Data.GDID? value);
-
-    public abstract void Write(Glue.Protocol.TypeSpec spec);
-    public abstract void Write(Glue.Protocol.MethodSpec spec);
-
-    public abstract void Write(FID value);
-    public abstract void Write(FID? value);
-
-    public abstract void Write(Pile.PilePointer value);
-    public abstract void Write(Pile.PilePointer? value);
-
     public abstract void Write(VarIntStr value);
     public abstract void Write(VarIntStr? value);
-
-    public abstract void Write(NLSMap map);
-    public abstract void Write(NLSMap? map);
-
-    public abstract void Write(Financial.Amount value);
-    public abstract void Write(Financial.Amount? value);
-
-    public abstract void Write(Collections.StringMap map);
-
-    public abstract void Write(Atom value);
-    public abstract void Write(Atom? value);
 
     #endregion
   }

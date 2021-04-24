@@ -7,8 +7,6 @@
 using System;
 using System.Text;
 
-using Azos.Serialization.JSON;
-
 namespace Azos.IO
 {
   /// <summary>
@@ -119,31 +117,8 @@ namespace Azos.IO
     public abstract Guid ReadGuid();
     public abstract Guid? ReadNullableGuid();
 
-    public abstract Data.GDID ReadGDID();
-    public abstract Data.GDID? ReadNullableGDID();
-
-    public abstract Glue.Protocol.TypeSpec ReadTypeSpec();
-    public abstract Glue.Protocol.MethodSpec ReadMethodSpec();
-
-    public abstract FID ReadFID();
-    public abstract FID? ReadNullableFID();
-
-    public abstract Pile.PilePointer ReadPilePointer();
-    public abstract Pile.PilePointer? ReadNullablePilePointer();
-
     public abstract VarIntStr ReadVarIntStr();
     public abstract VarIntStr? ReadNullableVarIntStr();
-
-    public abstract NLSMap ReadNLSMap();
-    public abstract NLSMap? ReadNullableNLSMap();
-
-    public abstract Financial.Amount ReadAmount();
-    public abstract Financial.Amount? ReadNullableAmount();
-
-    public abstract Collections.StringMap  ReadStringMap();
-
-    public abstract Atom ReadAtom();
-    public abstract Atom? ReadNullableAtom();
     #endregion
   }
 }

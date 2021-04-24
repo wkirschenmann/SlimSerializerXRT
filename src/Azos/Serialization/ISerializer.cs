@@ -5,19 +5,16 @@
 </FILE_LICENSE>*/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 
 namespace Azos.Serialization
 {
 
-    /// <summary>
-    /// Denotes ser/deser operations
-    /// </summary>
-    public enum SerializationOperation
+  /// <summary>
+  /// Denotes ser/deser operations
+  /// </summary>
+  public enum SerializationOperation
     {
       /// <summary>
       /// Serializing object to stream

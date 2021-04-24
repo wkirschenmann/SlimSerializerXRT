@@ -6,9 +6,6 @@
 
 using System;
 
-
-using Azos.Serialization.JSON;
-
 namespace Azos.IO
 {
   /// <summary>
@@ -621,76 +618,6 @@ namespace Azos.IO
       return null;
     }
 
-    public override Data.GDID ReadGDID()
-    {
-      var era = this.ReadUInt();
-      var id = this.ReadULong();
-      return new Data.GDID(era, id);
-    }
-
-    public override Data.GDID? ReadNullableGDID()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadGDID();
-
-      return null;
-    }
-
-
-    public override Azos.Glue.Protocol.TypeSpec ReadTypeSpec()
-    {
-      var result = new Azos.Glue.Protocol.TypeSpec();
-      result.m_Name = this.ReadString();
-      result.m_Hash = m_Stream.ReadBEUInt64();
-      return result;
-    }
-
-    public override Azos.Glue.Protocol.MethodSpec ReadMethodSpec()
-    {
-      var result = new Azos.Glue.Protocol.MethodSpec();
-      result.m_MethodName = this.ReadString();
-      result.m_ReturnType = m_Stream.ReadBEUInt64();
-      result.m_Signature = this.ReadByteArray();
-      result.m_Hash = m_Stream.ReadBEUInt64();
-      return result;
-    }
-
-
-    public override FID ReadFID()
-    {
-      var id = m_Stream.ReadBEUInt64();
-      return new FID(id);
-    }
-
-    public override FID? ReadNullableFID()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadFID();
-
-      return null;
-    }
-
-    public override Pile.PilePointer ReadPilePointer()
-    {
-      var node = this.ReadInt();
-      var seg  = this.ReadInt();
-      var adr  = this.ReadInt();
-      return new Azos.Pile.PilePointer(node, seg, adr);
-    }
-
-    public override Pile.PilePointer? ReadNullablePilePointer()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadPilePointer();
-
-      return null;
-    }
-
-
-
     public override VarIntStr ReadVarIntStr()
     {
       var str = this.ReadString();
@@ -708,86 +635,6 @@ namespace Azos.IO
       return null;
     }
 
-    public override NLSMap ReadNLSMap()
-    {
-      var cnt = this.ReadUShort();
-      if (cnt<=0) return new NLSMap();
-      if (cnt>NLSMap.MAX_ISO_COUNT) throw new AzosIOException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "Exceeded NLSMap.MAX_ISO_COUNT");
-
-      var data = new NLSMap.NDPair[cnt];
-      for(var i=0; i<cnt; i++)
-      {
-        var iso = this.ReadAtom();
-        var name = this.ReadString();
-        var descr = this.ReadString();
-        data[i] = new NLSMap.NDPair(iso, name, descr);
-      }
-
-      return new NLSMap(data);
-    }
-
-    public override NLSMap? ReadNullableNLSMap()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadNLSMap();
-
-      return null;
-    }
-
-    public override Financial.Amount ReadAmount()
-    {
-      var iso = ReadAtom();
-      var val = ReadDecimal();
-
-      return new Financial.Amount(iso, val);
-    }
-
-    public override Financial.Amount? ReadNullableAmount()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadAmount();
-
-      return null;
-    }
-
-
-
-    public override Collections.StringMap ReadStringMap()
-    {
-      var has = this.ReadBool();
-      if (!has) return null;
-
-      var senseCase = this.ReadBool();
-
-      var dict = Collections.StringMap.MakeDictionary(senseCase);
-
-      var count = this.ReadInt();
-      for(var i=0; i<count; i++)
-      {
-        var key = this.ReadString();
-        var value = this.ReadString();
-        dict[key] = value;
-      }
-
-      return new Collections.StringMap(senseCase, dict);
-    }
-
-    public override Atom ReadAtom()
-    {
-      var id = ReadULong();
-      return new Atom(id);
-    }
-
-    public override Atom? ReadNullableAtom()
-    {
-      var has = this.ReadBool();
-
-      if (has) return this.ReadAtom();
-
-      return null;
-    }
 
   }
 }

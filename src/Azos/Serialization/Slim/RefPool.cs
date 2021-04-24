@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 using Azos.IO;
@@ -88,14 +89,14 @@ namespace Azos.Serialization.Slim
 
        public void AddISerializableFixup(object instance, SerializationInfo info)
        {
-         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "AddISerializableFixup() called while serializing", DebugAction.Throw);
+         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "AddISerializableFixup() called while serializing");
 
          m_Fixups.Add( new _ISerializableFixup{ Instance = instance, Info = info } );
        }
 
        public void AddOnDeserializedCallback(object instance, TypeDescriptor descriptor)
        {
-         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "AddOnDeserializedCallback() called while serializing", DebugAction.Throw);
+         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "AddOnDeserializedCallback() called while serializing");
 
          m_OnDeserializedCallbacks.Add( new _OnDeserializedCallback{ Instance = instance, Descriptor = descriptor } );
        }
@@ -107,7 +108,7 @@ namespace Azos.Serialization.Slim
        /// </summary>
        public MetaHandle GetHandle(object reference, TypeRegistry treg, SlimFormat format, out Type type, bool serializationForFrameWork)
        {
-         Debug.Assert(m_Mode == SerializationOperation.Serializing, "GetHandle() called while deserializing", DebugAction.Throw);
+         Debug.Assert(m_Mode == SerializationOperation.Serializing, "GetHandle() called while deserializing");
 
          if (reference==null)
          {
@@ -164,7 +165,7 @@ namespace Azos.Serialization.Slim
        /// </summary>
        public object HandleToReference(MetaHandle handle, TypeRegistry treg, SlimFormat format, SlimReader reader)
        {
-         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "HandleToReference() called while serializing", DebugAction.Throw);
+         Debug.Assert(m_Mode == SerializationOperation.Deserializing, "HandleToReference() called while serializing");
 
          if (handle.IsInlinedString) return handle.Metadata.Value.StringValue;
          if (handle.IsInlinedTypeValue)

@@ -7,19 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 using Azos.IO;
-using System.Runtime.CompilerServices;
 
 namespace Azos.Serialization.Slim
 {
-    /// <summary>
-    /// Provides a registry of types, types that do not need to be described in a serialization stream
-    /// </summary>
-    [Serializable]
+  /// <summary>
+  /// Provides a registry of types, types that do not need to be described in a serialization stream
+  /// </summary>
+  [Serializable]
     public sealed class TypeRegistry : IEnumerable<Type>, ISerializable
     {
        #region COSNSTS
@@ -48,66 +45,6 @@ namespace Azos.Serialization.Slim
            }
 
            /// <summary>
-           /// Returns Glue protocol specific types
-           /// </summary>
-           public static IEnumerable<Type> GlueProtocolTypes
-           {
-             get
-             {
-               yield return typeof(Glue.Protocol.Msg);
-               yield return typeof(WrappedExceptionData);
-               yield return typeof(Glue.Protocol.RequestMsg);
-               yield return typeof(Glue.Protocol.RequestAnyMsg);
-               yield return typeof(Glue.Protocol.ResponseMsg);
-               yield return typeof(Glue.Protocol.Header);
-               yield return typeof(Glue.Protocol.Header []);
-               yield return typeof(Glue.Protocol.Headers);
-               yield return typeof(Glue.Protocol.AuthenticationHeader);
-               yield return typeof(Security.IDPasswordCredentials);
-               yield return typeof(Security.SysAuthToken);
-               yield return typeof(Security.SocialNetTokenCredentials);
-               yield return typeof(Exception);
-             }
-           }
-
-
-           /// <summary>
-           /// Returns common types for DataAccess.CRUD
-           /// </summary>
-           public static IEnumerable<Type> DataAccessCRUDTypes
-           {
-             get
-             {
-               yield return typeof(Data.Access.IDataStoreKey);
-               yield return typeof(Data.SchemaAttribute);
-               yield return typeof(Data.FieldAttribute);
-               yield return typeof(Data.FieldAttribute[]);
-               yield return typeof(List<Data.FieldAttribute>);
-               yield return typeof(Data.Schema);
-               yield return typeof(Data.Schema.FieldDef);
-               yield return typeof(Collections.OrderedRegistry<Data.Schema.FieldDef>);
-               yield return typeof(Collections.RegistryDictionary<Data.Schema.FieldDef>);
-               yield return typeof(List<Data.Schema.FieldDef>);
-               yield return typeof(Data.DocChange);
-               yield return typeof(Data.DocChange[]);
-               yield return typeof(List<Data.DocChange>);
-
-               yield return typeof(Data.Doc);
-               yield return typeof(Data.Doc[]);
-               yield return typeof(List<Data.Doc>);
-
-               yield return typeof(Data.DynamicDoc);
-               yield return typeof(Data.TypedDoc);
-               yield return typeof(Data.Access.Query);
-               yield return typeof(Data.Access.Query.Param);
-               yield return typeof(Data.Access.Query.Param[]);
-               yield return typeof(Data.Rowset);
-               yield return typeof(Data.Table);
-               yield return typeof(Data.Form);
-             }
-           }
-
-           /// <summary>
            /// Returns frequently-used generic collections
            /// </summary>
            public static IEnumerable<Type> CommonCollectionTypes
@@ -125,10 +62,6 @@ namespace Azos.Serialization.Slim
 
                yield return typeof(IEqualityComparer<object>);
                yield return typeof(IEqualityComparer<string>);
-
-               yield return typeof(Serialization.JSON.JsonDataArray);
-               yield return typeof(Serialization.JSON.JsonDataMap);
-               yield return typeof(Serialization.JSON.JsonDynamicObject);
 
                yield return typeof(Collections.StringMap);
              }
@@ -156,8 +89,6 @@ namespace Azos.Serialization.Slim
                yield return typeof(bool);
                yield return typeof(DateTime);
                yield return typeof(TimeSpan);
-               yield return typeof(Data.GDID);
-               yield return typeof(FID);
              }
            }
 
@@ -183,8 +114,6 @@ namespace Azos.Serialization.Slim
                yield return typeof(bool?);
                yield return typeof(DateTime?);
                yield return typeof(TimeSpan?);
-               yield return typeof(Data.GDID?);
-               yield return typeof(FID?);
              }
            }
 
@@ -198,22 +127,7 @@ namespace Azos.Serialization.Slim
              {
                foreach( var t in BoxedCommonTypes) yield return t;
                foreach( var t in BoxedCommonNullableTypes) yield return t;
-               yield return typeof(POD.PortableObjectDocument);
-               yield return typeof(POD.MetaType);
-               yield return typeof(POD.MetaPrimitiveType);
-               yield return typeof(POD.MetaComplexType);
-               yield return typeof(POD.MetaComplexType.MetaField);
-               yield return typeof(POD.CompositeData);
-               yield return typeof(POD.CompositeCustomData);
-               yield return typeof(POD.CompositeReflectedData);
-               yield return typeof(POD.CustomTypedEntry);
                yield return typeof(Conf.BuildInformation);
-               yield return typeof(List<POD.MetaType>);
-               yield return typeof(POD.MetaType[]);
-               yield return typeof(List<POD.CompositeData>);
-               yield return typeof(POD.CompositeData[]);
-               yield return typeof(List<POD.MetaComplexType.MetaField>);
-               yield return typeof(POD.MetaComplexType.MetaField[]);
              }
            }
 
@@ -247,7 +161,7 @@ namespace Azos.Serialization.Slim
 
              var types = info.GetValue("tps", typeof(string[])) as string[];
 
-             Debug.Assert( types!=null, "types==null in TypeRegistry.ctor(ser)", DebugAction.ThrowAndLog);
+             Debug.Assert( types!=null, "types==null in TypeRegistry.ctor(ser)");
 
              for(var i=0; i<types.Length; i++)
              {

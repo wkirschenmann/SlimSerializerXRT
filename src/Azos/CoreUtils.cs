@@ -10,9 +10,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Diagnostics;
-using Azos.Apps;
 using System.Runtime.CompilerServices;
-using Azos.Serialization.JSON;
 
 namespace Azos
 {
@@ -21,64 +19,6 @@ namespace Azos
   /// </summary>
   public static class CoreUtils
   {
-    /// <summary>
-    /// Returns true for DEV or LOCAL environments.
-    /// This method is used to ascertain the "non-prod" nature of the either and is typically used
-    /// to disclose or cloak/block sensitive information/details in things like logs and debug endpoints
-    /// (e.g. config content listing, debugging etc...)
-    /// </summary>
-    public static bool IsDeveloperEnvironment(this IApplication app)
-     => app.NonNull(nameof(app)).EnvironmentName.IsOneOf(CoreConsts.ENVIRONMENTS_DEVELOPER);
-
-    /// <summary>
-    /// Returns the name of entry point executable file optionally with its path
-    /// </summary>
-    public static string EntryExeName(bool withPath = true)
-    {
-      var file = Assembly.GetEntryAssembly().Location;
-
-      if (!withPath) file = Path.GetFileName(file);
-
-      return file;
-    }
-
-    /// <summary>
-    /// Determines if component is being used within designer
-    /// </summary>
-    public static bool IsComponentDesignerHosted(Component cmp)
-    {
-      if (cmp != null)
-      {
-
-        if (cmp.Site != null)
-          if (cmp.Site.DesignMode == true)
-            return true;
-
-      }
-
-      return false;
-    }
-
-
-    /// <summary>
-    /// Tests bool? for being assigned with true
-    /// </summary>
-    public static bool IsTrue(this Nullable<bool> value, bool dflt = false)
-    {
-      if (!value.HasValue) return dflt;
-      return value.Value;
-    }
-
-    /// <summary>
-    /// Shortcut to App.DependencyInjector.InjectInto(...)
-    /// </summary>
-    public static T InjectInto<T>(this IApplication app, T target) where T : class
-    {
-      app.NonNull(nameof(app)).DependencyInjector.InjectInto(target);
-      return target;
-    }
-
-
     /// <summary>
     /// Writes exception message with exception type
     /// </summary>
@@ -210,23 +150,6 @@ namespace Azos
       return pad + expr.ToString();
     }
 
-
-    /// <summary>
-    /// Returns true when supplied name can be used for XML node naming (node names, attribute names)
-    /// </summary>
-    public static bool IsValidXMLName(this string name)
-    {
-      if (name.IsNullOrWhiteSpace()) return false;
-      for (int i = 0; i < name.Length; i++)
-      {
-        char c = name[i];
-        if (c == '-' || c == '_') continue;
-        if (!Char.IsLetterOrDigit(c) || (i == 0 && !Char.IsLetter(c))) return false;
-      }
-
-      return true;
-    }
-
     /// <summary>
     /// Searches an Exception and its InnerException chain for the first instance of T or null.
     /// The original instance may be null itself in which case null is returned
@@ -243,86 +166,6 @@ namespace Azos
 
       return null;
     }
-
-    /// <summary>
-    /// Builds a default map with base exception descriptor, searching its InnerException chain for IExternalStatusProvider.
-    /// This method never returns null as the very root data map is always built
-    /// </summary>
-    public static JsonDataMap DefaultBuildErrorStatusProviderMap(this Exception error, bool includeDump, string ns, string type = null)
-    {
-      var result = new JsonDataMap
-      {
-        { CoreConsts.EXT_STATUS_KEY_NS, ns.NonBlank(nameof(ns)) },
-        { CoreConsts.EXT_STATUS_KEY_TYPE, type.Default(error.GetType().Name) }
-      };
-
-      if (error is AzosException aze)
-      {
-        result[CoreConsts.EXT_STATUS_KEY_CODE] = aze.Code;
-      }
-
-      var inner = error.InnerException.SearchThisOrInnerExceptionOf<IExternalStatusProvider>();
-
-      if (inner != null)
-      {
-        var innerData = inner.ProvideExternalStatus(includeDump);
-        if (innerData != null)
-          result[CoreConsts.EXT_STATUS_KEY_CAUSE] = innerData;
-      }
-
-      return result;
-    }
-
-
-    /// <summary>
-    /// Encloses an action in try catch and logs the error if it leaked from action. This method never leaks.
-    /// Returns true if there was no error on action success, or false if error leaked from action and was logged by component.
-    /// The actual logging depends on the component log level
-    /// </summary>
-    public static bool DontLeak(this IApplicationComponent cmp, Action action, string errorText = null, [CallerMemberName]string errorFrom = null, Log.MessageType errorLogType = Log.MessageType.Error)
-    {
-      var ac = (cmp.NonNull(nameof(cmp)) as ApplicationComponent).NonNull("Internal error: not a AC");
-      action.NonNull(nameof(action));
-      try
-      {
-        action();
-        return true;
-      }
-      catch(Exception error)
-      {
-        if (errorText.IsNullOrWhiteSpace()) errorText = "Error leaked: ";
-        errorText += error.ToMessageWithType();
-
-        ac.WriteLog(errorLogType, errorFrom, errorText, error);
-      }
-
-      return false;
-    }
-
-    /// <summary>
-    /// Encloses an action in try catch and logs the error if it leaked from action. This method never leaks.
-    /// Returns true if there was no error on action success, or false if error leaked from action and was logged by component.
-    /// The actual logging depends on the component log level
-    /// </summary>
-    public static TResult DontLeak<TResult>(this IApplicationComponent cmp, Func<TResult> func, string errorText = null, [CallerMemberName]string errorFrom = null, Log.MessageType errorLogType = Log.MessageType.Error)
-    {
-      var ac = (cmp.NonNull(nameof(cmp)) as ApplicationComponent).NonNull("Internal error: not a AC");
-      func.NonNull(nameof(func));
-      try
-      {
-        return func();
-      }
-      catch (Exception error)
-      {
-        if (errorText.IsNullOrWhiteSpace()) errorText = "Error leaked: ";
-        errorText += error.ToMessageWithType();
-
-        ac.WriteLog(errorLogType, errorFrom, errorText, error);
-      }
-
-      return default(TResult);
-    }
-
 
   }
 }

@@ -6,8 +6,6 @@
 
 using System;
 
-using Azos.Apps;
-
 namespace Azos
 {
   /// <summary>
@@ -57,54 +55,7 @@ namespace Azos
     /// </summary>
     public static MemoryUtilizationModel MemoryModel => s_MemoryModel;
 
-    /// <summary>
-    /// Sets the memory utilization model for the whole app.
-    /// This setting is NOT configurable. It may be set at process entry-point via a call to
-    /// App.SetMemoryModel() before the app container spawns.
-    /// Typical applications should not change the defaults.
-    /// Some system service providers may examine this property to allocate less cache and temp buffers
-    /// in the memory-constrained environments
-    /// </summary>
-    public static void SetMemoryModel(MemoryUtilizationModel model)
-    {
-      var app = ExecutionContext.Application;
 
-      if (app!=null && !(app is NOPApplication))
-        throw new AzosException(StringConsts.APP_SET_MEMORY_MODEL_ERROR);
-
-      s_MemoryModel = model;
-    }
-
-    /// <summary>
-    /// Shortcut access to  ExecutionContext.Application.TimeSource.UTCNow;
-    /// </summary>
-    public static DateTime UTCNow =>  ExecutionContext.Application.TimeSource.UTCNow;
-
-    /// <summary>
-    /// Returns process-wide random generator instance
-    /// </summary>
-    public static Platform.RandomGenerator Random => Platform.RandomGenerator.Instance;
-
-    /// <summary>
-    /// Returns an effective ConsolePort which is taken from the application/nesting chain
-    /// </summary>
-    public static IO.Console.IConsolePort AppConsolePort => ExecutionContext.EffectiveApplicationConsolePort;
-
-    /// <summary>
-    /// Returns the current call context user session. The returned value is never null and returns NOPSession with fake user if there is no real user session
-    /// impersonating this call flow
-    /// </summary>
-    public static ISession CurrentCallSession => ExecutionContext.Session;
-
-    /// <summary>
-    /// Returns the current call context user. The returned value is never null and returns fake user if there is no real user injected impersonating this call flow
-    /// </summary>
-    public static Security.User CurrentCallUser => CurrentCallSession.User;
-
-    /// <summary>
-    /// Returns the current call flow or null
-    /// </summary>
-    public static ICallFlow CurrentCallFlow => ExecutionContext.CallFlow;
 
   }
 }
