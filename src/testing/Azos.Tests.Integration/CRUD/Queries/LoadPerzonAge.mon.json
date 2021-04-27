@@ -1,4 +1,0 @@
-﻿#pragma
-modify=MyPerzon
-
-{'_id': '$$id', '$Azos-QUERY-PROJECTION': {'Age': 1, '_id': 0}}
