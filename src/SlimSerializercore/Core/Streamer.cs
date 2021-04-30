@@ -13,35 +13,35 @@ namespace SlimSerializer.Core
   /// Represents a base for stream readers and writers.
   /// Streamer object instances ARE NOT THREAD-safe
   /// </summary>
-  public abstract class Streamer
+  internal abstract class Streamer
   {
-    public static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(false, false);
+    public static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(false, false);
 
     protected Streamer(Encoding encoding = null)
     {
-      m_Encoding = encoding ?? UTF8Encoding;
+      this.encoding = encoding ?? Utf8Encoding;
 
-      m_Buff32 = SlimFormat.ts_Buff32;
-      if (m_Buff32==null)
+      Buff32 = SlimFormat.TsBuff32;
+      if (Buff32 == null)
       {
         var buf = new byte[32];
-        m_Buff32 = buf;
-        SlimFormat.ts_Buff32 = buf;
+        Buff32 = buf;
+        SlimFormat.TsBuff32 = buf;
       }
 
     }
 
-    protected byte[] m_Buff32;
+    protected byte[] Buff32;
 
-    protected Stream m_Stream;
-    protected Encoding m_Encoding;
+    protected Stream stream;
+    protected Encoding encoding;
 
 
 
     /// <summary>
     /// Returns format that this streamer implements
     /// </summary>
-    public abstract StreamerFormat Format
+    internal abstract StreamerFormat Format
     {
       get;
     }
@@ -50,19 +50,12 @@ namespace SlimSerializer.Core
     /// <summary>
     /// Returns underlying stream if it is bound or null
     /// </summary>
-    public Stream Stream
-    {
-      get { return m_Stream; }
-    }
+    public Stream Stream => stream;
 
     /// <summary>
     /// Returns stream string encoding
     /// </summary>
-    public Encoding Encoding
-    {
-      get { return m_Encoding; }
-    }
-
+    public Encoding Encoding => encoding;
 
 
     /// <summary>
@@ -71,13 +64,13 @@ namespace SlimSerializer.Core
     /// </summary>
     public void BindStream(Stream stream)
     {
-      if (stream==null)
-        throw new SlimException(StringConsts.ARGUMENT_ERROR + GetType().FullName+".BindStream(stream==null)");
+      if (stream == null)
+        throw new SlimException(StringConsts.ArgumentError + GetType().FullName + ".BindStream(stream==null)");
 
-      if (m_Stream!=null && m_Stream!=stream)
-        throw new SlimException(StringConsts.ARGUMENT_ERROR + GetType().FullName+" must unbind prior stream first");
+      if (this.stream != null && this.stream != stream)
+        throw new SlimException(StringConsts.ArgumentError + GetType().FullName + " must unbind prior stream first");
 
-      m_Stream = stream;
+      this.stream = stream;
     }
 
     /// <summary>
@@ -85,10 +78,10 @@ namespace SlimSerializer.Core
     /// </summary>
     public void UnbindStream()
     {
-      if (m_Stream==null) return;
+      if (stream == null) return;
 
-      if (this is WritingStreamer) m_Stream.Flush();
-      m_Stream = null;
+      if (this is WritingStreamer) stream.Flush();
+      stream = null;
     }
 
   }

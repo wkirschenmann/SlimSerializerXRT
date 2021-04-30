@@ -7,6 +7,7 @@
 using SlimSerializer.Core;
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
 
 namespace SlimSerializer
@@ -17,18 +18,19 @@ namespace SlimSerializer
   [Serializable]
   public class SlimException : Exception
   {
-    public const string CODE_FLD_NAME = "AE-C";
-    public const string FROM_FLD_NAME = "DAE-F";
+    public const string CodeFldName = "AE-C";
+    public const string FromFldName = "DAE-F";
     public SlimException() { }
     public SlimException(string message) : base(message) { }
     public SlimException(string message, Exception inner) : base(message, inner) { }
 
     public SlimException(string message, string from = null) : base(message) { m_From = from; }
-    protected SlimException(SerializationInfo info, StreamingContext context) : base(info, context) {
-      m_From = info.GetString(FROM_FLD_NAME);
+    protected SlimException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+      m_From = info.GetString(FromFldName);
     }
     public SlimException(Type type)
-      : base(StringConsts.SLIM_SER_PROHIBIT_ERROR.Args(type != null ? type.FullName : CoreConsts.NULL_STRING,
+      : base(StringConsts.SerProhibitError.Args(type != null ? type.FullName : CoreConsts.NullString,
                                                         typeof(SlimSerializationProhibitedAttribute).Name))
     { }
 
@@ -40,10 +42,9 @@ namespace SlimSerializer
 
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-      if (info == null)
-        throw new ArgumentNullException("info", GetType().Name + ".GetObjectData(info=null)");
-      info.AddValue(CODE_FLD_NAME, Code);
-      info.AddValue(FROM_FLD_NAME, m_From);
+      Contract.Requires(!(info is null), $"{nameof(info)} is not null");
+      info.AddValue(CodeFldName, Code);
+      info.AddValue(FromFldName, m_From);
       base.GetObjectData(info, context);
     }
   }

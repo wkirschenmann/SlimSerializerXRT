@@ -1,8 +1,8 @@
 ﻿/*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
+
+using System.Globalization;
 
 namespace SlimSerializer.Core
 {
@@ -11,7 +11,7 @@ namespace SlimSerializer.Core
   /// </summary>
   public static class StrUtils
   {
-    public static readonly string[] WIN_UNIX_LINE_BRAKES = new string[] { "\r\n", "\n" };
+    public static readonly string[] WinUnixLineBrakes = new string[] { "\r\n", "\n" };
 
     /// <summary>
     /// Shortcut helper for string.Format(tpl, params object[] args)
@@ -19,7 +19,7 @@ namespace SlimSerializer.Core
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static string Args(this string tpl, params object[] args)
     {
-      return string.Format(tpl, args);
+      return string.Format(CultureInfo.InvariantCulture, tpl, args);
     }
 
     /// <summary>

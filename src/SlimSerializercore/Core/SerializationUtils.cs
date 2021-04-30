@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -19,7 +20,7 @@ namespace SlimSerializer.Core
   /// Provides misc serialization-related functions that are really low-level and not intended to be used by developers.
   /// Methods are thread-safe
   /// </summary>
-  public static class SerializationUtils
+  internal static class SerializationUtils
   {
 
     /// <summary>
@@ -27,14 +28,15 @@ namespace SlimSerializer.Core
     /// </summary>
     public static ConstructorInfo GetISerializableCtorInfo(Type type)
     {
-        return type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
-                                          null,
-                                          new Type[] { typeof(SerializationInfo), typeof(StreamingContext)},
-                                          null);
+      Contract.Requires(!(type is null), $"{nameof(type)} is not null");
+      return type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
+                                        null,
+                                        new Type[] { typeof(SerializationInfo), typeof(StreamingContext) },
+                                        null);
     }
 
 
-    private static volatile Dictionary<Type, Func<object>> s_CreateFuncCache = new Dictionary<Type, Func<object>>();
+    private static volatile Dictionary<Type, Func<object>> _sCreateFuncCache = new Dictionary<Type, Func<object>>();
 
     /// <summary>
     /// Create new object instance for type using serialization constructors or default ctor
@@ -42,33 +44,32 @@ namespace SlimSerializer.Core
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static object MakeNewObjectInstance(Type type)
     {
-      Func<object> f;
-      if (!s_CreateFuncCache.TryGetValue(type, out f))
+      if (!_sCreateFuncCache.TryGetValue(type, out Func<object> f))
       {
-        var ctorEmpty = type.GetConstructor(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance,
+        var ctorEmpty = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
                                         null,
                                         Type.EmptyTypes,
                                         null);
 
         //20150717 DKh added SlimDeserializationCtorSkipAttribute
-        var skipAttr = ctorEmpty!=null ?
-                        ctorEmpty.GetCustomAttributes<SlimDeserializationCtorSkipAttribute>(false).FirstOrDefault()
-                        : null;
+        var skipAttr = ctorEmpty?.GetCustomAttributes<SlimDeserializationCtorSkipAttribute>(false).FirstOrDefault();
 
 
         //20150715 DKh look for ISerializable .ctor
         var ctorSer = GetISerializableCtorInfo(type);
 
         //20150715 DKh, the empty .ctor SHOULD NOT be called for types that have SERIALIZABLE .ctor which is called later(after object init)
-        if (ctorEmpty!=null && skipAttr==null && ctorSer==null)
+        if (ctorEmpty != null && skipAttr == null && ctorSer == null)
           f = Expression.Lambda<Func<object>>(Expression.New(type)).Compile();
         else
           f = () => FormatterServices.GetUninitializedObject(type);
 
-        var cache = new Dictionary<Type, Func<object>>( s_CreateFuncCache );
-        cache[type] = f;
+        var cache = new Dictionary<Type, Func<object>>(_sCreateFuncCache)
+        {
+          [type] = f
+        };
         Thread.MemoryBarrier();
-        s_CreateFuncCache = cache;
+        _sCreateFuncCache = cache;
       }
 
       return f();
@@ -76,23 +77,23 @@ namespace SlimSerializer.Core
 
 
     //20150124 Added caching
-    private static volatile Dictionary<Type, FieldInfo[]> s_FieldCache = new Dictionary<Type, FieldInfo[]>();
-    private static FieldInfo[] getGetSerializableFields(Type type)
+    private static volatile Dictionary<Type, FieldInfo[]> _sFieldCache = new Dictionary<Type, FieldInfo[]>();
+    private static FieldInfo[] GetGetSerializableFields(Type type)
     {
       //20140926 DKh +DeclaredOnly
       var local = type.GetFields(BindingFlags.DeclaredOnly |
-                                  BindingFlags.Instance  |
+                                  BindingFlags.Instance |
                                   BindingFlags.NonPublic |
                                   BindingFlags.Public)
                       //DKh 20130801 removed readonly constraint
                       //DKh 20181129 filter-out Inject fields
                       .Where(fi => !fi.IsNotSerialized)
-                      .OrderBy( fi => fi.Name )//DKh 20130730
+                      .OrderBy(fi => fi.Name)//DKh 20130730
                       .ToArray();
 
       var bt = type.BaseType;//null for Object
 
-      if (bt==null || bt==typeof(object)) return local;
+      if (bt == null || bt == typeof(object)) return local;
 
       return GetSerializableFields(type.BaseType).Concat(local).ToArray();//20140926 DKh parent+child reversed order, was: child+parent
     }
@@ -103,14 +104,15 @@ namespace SlimSerializer.Core
     /// </summary>
     public static IEnumerable<FieldInfo> GetSerializableFields(Type type)
     {
-      FieldInfo[] result;
-      if (!s_FieldCache.TryGetValue(type, out result))
+      if (!_sFieldCache.TryGetValue(type, out FieldInfo[] result))
       {
-        result = getGetSerializableFields(type);
-        var dict = new Dictionary<Type, FieldInfo[]>(s_FieldCache);
-        dict[type] = result;
+        result = GetGetSerializableFields(type);
+        var dict = new Dictionary<Type, FieldInfo[]>(_sFieldCache)
+        {
+          [type] = result
+        };
         Thread.MemoryBarrier();
-        s_FieldCache = dict;
+        _sFieldCache = dict;
       }
       return result;
     }
@@ -125,23 +127,23 @@ namespace SlimSerializer.Core
     {
       var list = new List<MethodInfo>();
 
-      while(t!=null && t!=typeof(object))
+      while (t != null && t != typeof(object))
       {
-          var methods = t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                          .Where(mi => Attribute.IsDefined( mi, atype) &&
-                                          mi.ReturnType==typeof(void) &&
-                                          mi.GetParameters().Length==1 &&
-                                          mi.GetParameters()[0].ParameterType == typeof(StreamingContext));
-          foreach(var m in methods)
+        var methods = t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Where(mi => Attribute.IsDefined(mi, atype) &&
+                                        mi.ReturnType == typeof(void) &&
+                                        mi.GetParameters().Length == 1 &&
+                                        mi.GetParameters()[0].ParameterType == typeof(StreamingContext));
+        foreach (var m in methods)
           list.Add(m);
 
-          t = t.BaseType;
+        t = t.BaseType;
       }
 
-      if (list.Count>0)
+      if (list.Count > 0)
       {
-          list.Reverse(); //because we harvest methods from child -> parent but need to call parent->child order
-          return list;
+        list.Reverse(); //because we harvest methods from child -> parent but need to call parent->child order
+        return list;
       }
 
       return null;
@@ -155,16 +157,16 @@ namespace SlimSerializer.Core
     /// <param name="streamingContext">Streaming Context</param>
     public static void InvokeSerializationAttributedMethods(List<MethodInfo> methods, object instance, StreamingContext streamingContext)
     {
-      if (instance==null) return;
+      if (instance == null) return;
 
-      for(var i=0; i<methods.Count; i++)
+      for (var i = 0; i < methods.Count; i++)
         try
         {
-        methods[i].Invoke(instance, new object[] { streamingContext });
+          methods[i].Invoke(instance, new object[] { streamingContext });
         }
-        catch(TargetInvocationException ie)
+        catch (TargetInvocationException ie)
         {  //20131219 DKh
-          if (ie.InnerException!=null) throw ie.InnerException;
+          if (ie.InnerException != null) throw ie.InnerException;
           throw;
         }
     }
@@ -177,18 +179,18 @@ namespace SlimSerializer.Core
     {
       var rank = arr.Rank;
 
-      if (rank==1)
+      if (rank == 1)
       {
-          var i = arr.GetLowerBound(0);
-          var top = arr.GetUpperBound(0);
-          for(; i<=top; i++)
-            each(arr.GetValue(i));
-          return;
+        var i = arr.GetLowerBound(0);
+        var top = arr.GetUpperBound(0);
+        for (; i <= top; i++)
+          each(arr.GetValue(i));
+        return;
       }
 
 
       var idxs = new int[rank];
-      doDimensionGetValue(arr, idxs, 0, each);
+      DoDimensionGetValue(arr, idxs, 0, each);
     }
 
     /// <summary>
@@ -198,47 +200,47 @@ namespace SlimSerializer.Core
     {
       var rank = arr.Rank;
 
-      if (rank==1)
+      if (rank == 1)
       {
-          var i = arr.GetLowerBound(0);
-          var top = arr.GetUpperBound(0);
-          for(; i<=top; i++)
-            arr.SetValue(each(), i);
-          return;
+        var i = arr.GetLowerBound(0);
+        var top = arr.GetUpperBound(0);
+        for (; i <= top; i++)
+          arr.SetValue(each(), i);
+        return;
       }
 
 
       var idxs = new int[rank];
-      doDimensionSetValue<T>(arr, idxs, 0, each);
+      DoDimensionSetValue<T>(arr, idxs, 0, each);
     }
 
 
-    private static void doDimensionGetValue(Array arr, int[] idxs, int di, Action<object> each)
+    private static void DoDimensionGetValue(Array arr, int[] idxs, int di, Action<object> each)
     {
-      var bot =  arr.GetLowerBound(di);
-      var top =  arr.GetUpperBound(di);
-      for(idxs[di] = bot; idxs[di] <= top; idxs[di]++)
+      var bot = arr.GetLowerBound(di);
+      var top = arr.GetUpperBound(di);
+      for (idxs[di] = bot; idxs[di] <= top; idxs[di]++)
       {
-          if (di<idxs.Length-1)
-              doDimensionGetValue(arr, idxs, di + 1, each);
-          else
-              each( arr.GetValue(idxs) );
+        if (di < idxs.Length - 1)
+          DoDimensionGetValue(arr, idxs, di + 1, each);
+        else
+          each(arr.GetValue(idxs));
       }
-      idxs[di]=top;
+      idxs[di] = top;
     }
 
-    private static void doDimensionSetValue<T>(Array arr, int[] idxs, int di, Func<T> each)
+    private static void DoDimensionSetValue<T>(Array arr, int[] idxs, int di, Func<T> each)
     {
-      var bot =  arr.GetLowerBound(di);
-      var top =  arr.GetUpperBound(di);
-      for(idxs[di] = bot; idxs[di] <= top; idxs[di]++)
+      var bot = arr.GetLowerBound(di);
+      var top = arr.GetUpperBound(di);
+      for (idxs[di] = bot; idxs[di] <= top; idxs[di]++)
       {
-          if (di<idxs.Length-1)
-              doDimensionSetValue(arr, idxs, di + 1, each);
-          else
-              arr.SetValue( each(), idxs );
+        if (di < idxs.Length - 1)
+          DoDimensionSetValue(arr, idxs, di + 1, each);
+        else
+          arr.SetValue(each(), idxs);
       }
-      idxs[di]=top;
+      idxs[di] = top;
     }
   }
 }

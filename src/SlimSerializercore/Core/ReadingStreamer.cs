@@ -12,10 +12,10 @@ namespace SlimSerializer.Core
   /// <summary>
   /// Reads primitives from stream
   /// </summary>
-  public abstract class ReadingStreamer : Streamer
+  internal abstract class ReadingStreamer : Streamer
   {
     #region .ctor
-    protected ReadingStreamer(Encoding encoding=null) : base(encoding)
+    protected ReadingStreamer(Encoding encoding = null) : base(encoding)
     {
     }
 
@@ -25,15 +25,15 @@ namespace SlimSerializer.Core
 
     protected int ReadFromStream(byte[] buffer, int count)
     {
-      if (count<=0) return 0;
+      if (count <= 0) return 0;
       var total = 0;
       do
       {
-        var got = m_Stream.Read(buffer, total, count-total);
-        if (got==0) //EOF
-        throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadFromStream(Need: {0}; Got: {1})".Args(count, total));
+        var got = stream.Read(buffer, total, count - total);
+        if (got == 0) //EOF
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadFromStream(Need: {0}; Got: {1})".Args(count, total));
         total += got;
-      }while(total<count);
+      } while (total < count);
 
       return total;
     }
@@ -48,8 +48,8 @@ namespace SlimSerializer.Core
 
     public byte ReadByte()
     {
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadByte(): eof");
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadByte(): eof");
 
       return (byte)b;
     }

@@ -1,11 +1,10 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
@@ -15,7 +14,7 @@ using SlimSerializer.Core;
 namespace SlimSerializer
 {
   /// <summary>
-  /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) paremeter.
+  /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) parameter.
   /// This class was designed for highly-efficient serialization of types without versioning.
   /// SlimSerializer supports a concept of "known types" that save space by not emitting their names into stream.
   /// Performance note:
@@ -30,7 +29,7 @@ namespace SlimSerializer
   {
     #region CONSTS
 
-    public const ushort HEADER = (ushort)0xCAFE;
+    public const int Header = 0xCAFE;
 
     #endregion
 
@@ -47,16 +46,14 @@ namespace SlimSerializer
 
     }
 
-    public SlimSerializer(SlimFormat format)
+    internal SlimSerializer(SlimFormat format)
     {
-      if (format == null)
-        throw new SlimException(StringConsts.ARGUMENT_ERROR + "SlimSerializer.ctor(format=null)");
-
-      m_Format = format;
+      Contract.Requires(!(format is null), $"{nameof(format)} is not null");
+      Format = format;
       m_TypeMode = TypeRegistryMode.PerCall;
     }
 
-    public SlimSerializer(SlimFormat format, params IEnumerable<Type>[] globalTypes) : this(format)
+    internal SlimSerializer(SlimFormat format, params IEnumerable<Type>[] globalTypes) : this(format)
     {
       m_GlobalTypes = globalTypes;
     }
@@ -64,7 +61,7 @@ namespace SlimSerializer
 
     internal SlimSerializer(TypeRegistry global, SlimFormat format) : this(format)
     {
-      __globalTypeRegistry = global;
+      GlobalTypeRegistry = global;
       m_GlobalTypes = new IEnumerable<Type>[] { global.ToArray() };
       m_SkipTypeRegistryCrosschecks = true;
     }
@@ -74,21 +71,15 @@ namespace SlimSerializer
 
     #region Fields
 
-    internal readonly TypeRegistry __globalTypeRegistry;
+    internal readonly TypeRegistry GlobalTypeRegistry;
 
-    private SlimFormat m_Format;
-    private IEnumerable<Type>[] m_GlobalTypes;
+    private readonly IEnumerable<Type>[] m_GlobalTypes;
     private TypeRegistryMode m_TypeMode;
 
     private TypeRegistry m_BatchTypeRegistry;
     private int m_BatchTypeRegistryPriorCount;
 
-    private bool m_SkipTypeRegistryCrosschecks;
-
-    /// <summary>
-    /// Associates arbitrary owner object with this instance. Slim serializer does not use this field internally for any purpose
-    /// </summary>
-    public object Owner;
+    private readonly bool m_SkipTypeRegistryCrosschecks;
 
     #endregion
 
@@ -96,7 +87,7 @@ namespace SlimSerializer
 
 
 
-    public SlimFormat Format { get { return m_Format; } }
+    internal SlimFormat Format { get; }
 
     /// <summary>
     /// Gets/sets how serializer handles type information between calls to Serialize/Deserialize.
@@ -105,7 +96,7 @@ namespace SlimSerializer
     /// </summary>
     public TypeRegistryMode TypeMode
     {
-      get { return m_TypeMode; }
+      get => m_TypeMode;
       set
       {
         if (m_TypeMode == value) return;
@@ -125,28 +116,14 @@ namespace SlimSerializer
     /// <summary>
     /// Returns true when TypeMode is "PerCall"
     /// </summary>
-    public bool IsThreadSafe { get { return m_TypeMode == TypeRegistryMode.PerCall; } }
+    public bool IsThreadSafe => m_TypeMode == TypeRegistryMode.PerCall;
 
 
     /// <summary>
     /// Returns true if last call to Serialize or Deserialize in batch mode added more types to type registry.
     /// This call is only valid in TypeMode = "Batch" and is inherently not thread-safe
     /// </summary>
-    public bool BatchTypesAdded
-    {
-      get { return m_TypeMode == TypeRegistryMode.Batch && m_BatchTypeRegistryPriorCount != m_BatchTypeRegistry.Count; }
-    }
-
-    /// <summary>
-    /// ADVANCED FEATURE! Developers do not use.
-    /// Returns type registry used in batch.
-    /// This call is only valid in TypeMode = "Batch" and is inherently not thread-safe.
-    /// Be careful not to mutate the returned object
-    /// </summary>
-    public TypeRegistry BatchTypeRegistry
-    {
-      get { return m_BatchTypeRegistry; }
-    }
+    public bool BatchTypesAdded => m_TypeMode == TypeRegistryMode.Batch && m_BatchTypeRegistryPriorCount != m_BatchTypeRegistry.Count;
 
     #endregion
 
@@ -167,7 +144,7 @@ namespace SlimSerializer
     private int m_SerializeNestLevel;
     private SlimWriter m_CachedWriter;
 
-    public bool SerializeForFramework { get; set; } = false;
+    public bool SerializeForFramework { get; set; }
 
     public void Serialize(Stream stream, object root)
     {
@@ -178,35 +155,35 @@ namespace SlimSerializer
         SlimWriter writer;
 
         if (!singleThreaded || m_SerializeNestLevel > 0)
-          writer = m_Format.MakeWritingStreamer();
+          writer = Format.MakeWritingStreamer();
         else
         {
           writer = m_CachedWriter;
           if (writer == null)
           {
-            writer = m_Format.MakeWritingStreamer();
+            writer = Format.MakeWritingStreamer();
             m_CachedWriter = writer;
           }
         }
 
-        var pool = reservePool(SerializationOperation.Serializing);
+        var pool = ReservePool(SerializationOperation.Serializing);
         try
         {
           m_SerializeNestLevel++;
           writer.BindStream(stream);
 
-          serialize(writer, root, pool, SerializeForFramework);
+          Serialize(writer, root, pool, SerializeForFramework);
         }
         finally
         {
           writer.UnbindStream();
           m_SerializeNestLevel--;
-          releasePool(pool);
+          ReleasePool(pool);
         }
       }
       catch (Exception error)
       {
-        throw new SlimException(StringConsts.SLIM_SERIALIZATION_EXCEPTION_ERROR + error.ToMessageWithType(), error);
+        throw new SlimException(StringConsts.SerializationExceptionError + error.ToMessageWithType(), error);
       }
     }
 
@@ -222,35 +199,35 @@ namespace SlimSerializer
         SlimReader reader;
 
         if (!singleThreaded || m_DeserializeNestLevel > 0)
-          reader = m_Format.MakeReadingStreamer();
+          reader = Format.MakeReadingStreamer();
         else
         {
           reader = m_CachedReader;
           if (reader == null)
           {
-            reader = m_Format.MakeReadingStreamer();
+            reader = Format.MakeReadingStreamer();
             m_CachedReader = reader;
           }
         }
 
-        var pool = reservePool(SerializationOperation.Deserializing);
+        var pool = ReservePool(SerializationOperation.Deserializing);
         try
         {
           m_DeserializeNestLevel++;
           reader.BindStream(stream);
 
-          return deserialize(reader, pool);
+          return Deserialize(reader, pool);
         }
         finally
         {
           reader.UnbindStream();
           m_DeserializeNestLevel--;
-          releasePool(pool);
+          ReleasePool(pool);
         }
       }
       catch (Exception error)
       {
-        throw new SlimException(StringConsts.SLIM_DESERIALIZATION_EXCEPTION_ERROR + error.ToMessageWithType(), error);
+        throw new SlimException(StringConsts.DeserializationExceptionError + error.ToMessageWithType(), error);
       }
     }
 
@@ -261,25 +238,25 @@ namespace SlimSerializer
     #region .pvt .impl
 
     [ThreadStatic]
-    private static RefPool[] ts_pools;
+    private static RefPool[] _tsPools;
     [ThreadStatic]
-    private static int ts_poolFreeIdx;
+    private static int _tsPoolFreeIdx;
 
-    private static RefPool reservePool(SerializationOperation mode)
+    private static RefPool ReservePool(SerializationOperation mode)
     {
-      RefPool result = null;
-      if (ts_pools == null)
+      RefPool result;
+      if (_tsPools == null)
       {
-        ts_pools = new RefPool[8];
-        for (var i = 0; i < ts_pools.Length; i++)
-          ts_pools[i] = new RefPool();
-        ts_poolFreeIdx = 0;
+        _tsPools = new RefPool[8];
+        for (var i = 0; i < _tsPools.Length; i++)
+          _tsPools[i] = new RefPool();
+        _tsPoolFreeIdx = 0;
       }
 
-      if (ts_poolFreeIdx < ts_pools.Length)
+      if (_tsPoolFreeIdx < _tsPools.Length)
       {
-        result = ts_pools[ts_poolFreeIdx];
-        ts_poolFreeIdx++;
+        result = _tsPools[_tsPoolFreeIdx];
+        _tsPoolFreeIdx++;
       }
       else
         result = new RefPool();
@@ -288,34 +265,34 @@ namespace SlimSerializer
       return result;
     }
 
-    private static void releasePool(RefPool pool)
+    private static void ReleasePool(RefPool pool)
     {
-      if (ts_poolFreeIdx == 0) return;
+      if (_tsPoolFreeIdx == 0) return;
       pool.Release();
-      ts_poolFreeIdx--;
-      ts_pools[ts_poolFreeIdx] = pool;
+      _tsPoolFreeIdx--;
+      _tsPools[_tsPoolFreeIdx] = pool;
     }
 
 
-    private void serialize(SlimWriter writer, object root, RefPool pool, bool serializationForFrameWork)
+    private void Serialize(SlimWriter writer, object root, RefPool pool, bool serializationForFrameWork)
     {
-      if (root is Type)
-        root = new rootTypeBox { TypeValue = (Type)root };
+      if (root is Type rootType)
+        root = new RootTypeBox { TypeValue = rootType };
 
-      var scontext = new StreamingContext();
+      var streamingContext = new StreamingContext();
       var registry = (m_TypeMode == TypeRegistryMode.PerCall) ? new TypeRegistry(m_GlobalTypes) : m_BatchTypeRegistry;
       var type = root != null ? root.GetType() : typeof(object);
       var isValType = type.IsValueType;
 
 
-      writeHeader(writer);
-      var rcount = registry.Count;
-      m_BatchTypeRegistryPriorCount = rcount;
+      WriteHeader(writer);
+      var registryCount = registry.Count;
+      m_BatchTypeRegistryPriorCount = registryCount;
 
       if (!m_SkipTypeRegistryCrosschecks)
       {
-        writer.Write((uint)rcount);
-        writer.Write(registry.CSum);
+        writer.Write((uint)registryCount);
+        writer.Write(registry.CheckSum);
       }
 
 
@@ -323,7 +300,7 @@ namespace SlimSerializer
       if (!isValType && root != null)
         pool.Add(root);
 
-      m_Format.TypeSchema.Serialize(writer, registry, pool, root, scontext, serializationForFrameWork);
+      Format.TypeSchema.Serialize(writer, registry, pool, root, streamingContext, serializationForFrameWork, null);
 
 
       if (root == null) return;
@@ -335,43 +312,44 @@ namespace SlimSerializer
       //Write all the rest of objects. The upper bound of this loop may increase as objects are written
       //0 = NULL
       //1 = root IF root is ref type
-      var ts = m_Format.TypeSchema;
+      var ts = Format.TypeSchema;
       for (; i < pool.Count; i++)
       {
         var instance = pool[i];
-        var tinst = instance.GetType();
-        if (!m_Format.IsRefTypeSupported(tinst))
-          ts.Serialize(writer, registry, pool, instance, scontext, serializationForFrameWork);
+        var instanceType = instance.GetType();
+        if (!Format.IsRefTypeSupported(instanceType))
+          ts.Serialize(writer, registry, pool, instance, streamingContext, serializationForFrameWork);
       }
 
     }
 
-    private object deserialize(SlimReader reader, RefPool pool)
+    private object Deserialize(SlimReader reader, RefPool pool)
     {
-      object root = null;
+      object root;
 
-      var scontext = new StreamingContext();
+      var streamingContext = new StreamingContext();
       var registry = (m_TypeMode == TypeRegistryMode.PerCall) ? new TypeRegistry(m_GlobalTypes) : m_BatchTypeRegistry;
 
       {
-        var rcount = registry.Count;
-        m_BatchTypeRegistryPriorCount = rcount;
+        var registryCount = registry.Count;
+        m_BatchTypeRegistryPriorCount = registryCount;
 
-        readHeader(reader);
+        ReadHeader(reader);
         if (!m_SkipTypeRegistryCrosschecks)
         {
-          if (reader.ReadUInt() != rcount)
-            throw new SlimException(StringConsts.SLIM_TREG_COUNT_ERROR);
-          if (reader.ReadULong() != registry.CSum)
-            throw new SlimException(StringConsts.SLIM_TREG_CSUM_ERROR);
+          if (reader.ReadUInt() != registryCount)
+            throw new SlimException(StringConsts.TregCountError);
+          if (reader.ReadULong() != registry.CheckSum)
+            throw new SlimException(StringConsts.TregCsumError);
         }
 
         //Read root
         //Deser will add root to pool[1] if its ref-typed
         //------------------------------------------------
-        root = m_Format.TypeSchema.DeserializeRootOrInner(reader, registry, pool, scontext, root: true);
+        root = Format.TypeSchema.DeserializeRootOrInner(reader, registry, pool, streamingContext, root: true);
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
         if (root == null) return null;
-        if (root is rootTypeBox) return ((rootTypeBox)root).TypeValue;
+        if (root is RootTypeBox box) return box.TypeValue;
 
 
         var type = root.GetType();
@@ -385,35 +363,34 @@ namespace SlimSerializer
         //0 = NULL
         //1 = root IF root is ref type
         //-----------------------------------------------
-        var ts = m_Format.TypeSchema;
+        var ts = Format.TypeSchema;
         for (; i < pool.Count; i++)
         {
           var instance = pool[i];
-          var tinst = instance.GetType();
-          if (!m_Format.IsRefTypeSupported(tinst))
-            ts.DeserializeRefTypeInstance(instance, reader, registry, pool, scontext);
+          var instanceType = instance.GetType();
+          if (!Format.IsRefTypeSupported(instanceType))
+            ts.DeserializeRefTypeInstance(instance, reader, registry, pool, streamingContext);
         }
 
       }
 
-      //perform fixups for ISerializable
+      //perform fixUps for ISerializable
       //---------------------------------------------
-      var fxps = pool.Fixups;
-      for (var i = 0; i < fxps.Count; i++)
+      var poolFixUps = pool.FixUps;
+      foreach (var fixUp in poolFixUps)
       {
-        var fixup = fxps[i];
-        var t = fixup.Instance.GetType();
+        var t = fixUp.Instance.GetType();
         var ctor = SerializationUtils.GetISerializableCtorInfo(t);
 
         if (ctor == null) continue;//20171223 DKh ISerializable does not mandate the .ctor(info, context),
-                                   //for example, in net-core they use info.SetType() to redefine comparers
-                                   //so the actual comparer does not have a .ctor at all (which is very odd)
+        //for example, in net-core they use info.SetType() to redefine comparers
+        //so the actual comparer does not have a .ctor at all (which is very odd)
 
         //Before 20171223 DKh change
         //if (ctor==null)
         // throw new SlimDeserializationException(StringConsts.SLIM_ISERIALIZABLE_MISSING_CTOR_ERROR + t.FullName);
 
-        ctor.Invoke(fixup.Instance, new object[] { fixup.Info, scontext });
+        ctor.Invoke(fixUp.Instance, new object[] { fixUp.Info, streamingContext });
       }
 
 
@@ -422,26 +399,24 @@ namespace SlimSerializer
       //invoke OnDeserialized-decorated methods
       //--------------------------------------------
       var odc = pool.OnDeserializedCallbacks;
-      for (int i = 0; i < odc.Count; i++)
+      foreach (var cb in odc)
       {
-        var cb = odc[i];
-        cb.Descriptor.InvokeOnDeserializedCallbak(cb.Instance, scontext);
+        cb.Descriptor.InvokeOnDeserializedCallbak(cb.Instance, streamingContext);
       }
 
       //before 20150214 this was BEFORE OnDeserializedCallbacks
       //invoke IDeserializationCallback
       //---------------------------------------------
-      for (int i = 1; i < pool.Count; i++)//[0]=null
+      for (var i = 1; i < pool.Count; i++)//[0]=null
       {
-        var dc = pool[i] as IDeserializationCallback;
-        if (dc != null)
+        if (pool[i] is IDeserializationCallback dc)
           try
           {
             dc.OnDeserialization(this);
           }
           catch (Exception error)
           {
-            throw new SlimException(StringConsts.SLIM_DESERIALIZE_CALLBACK_ERROR + error.ToMessageWithType(), error);
+            throw new SlimException(StringConsts.DeserializeCallbackError + error.ToMessageWithType(), error);
           }
       }
 
@@ -452,24 +427,24 @@ namespace SlimSerializer
 
 
 
-    private void writeHeader(SlimWriter writer)
+    private static void WriteHeader(WritingStreamer writer)
     {
       writer.Write((byte)0);
       writer.Write((byte)0);
-      writer.Write((byte)((HEADER >> 8) & 0xff));
-      writer.Write((byte)(HEADER & 0xff));
+      writer.Write((byte)((Header >> 8) & 0xff));
+      writer.Write((byte)(Header & 0xff));
     }
 
-    private void readHeader(SlimReader reader)
+    private static void ReadHeader(ReadingStreamer reader)
     {
       if (reader.ReadByte() != 0 ||
           reader.ReadByte() != 0 ||
-          reader.ReadByte() != (byte)((HEADER >> 8) & 0xff) ||
-          reader.ReadByte() != (byte)(HEADER & 0xff)
-         ) throw new SlimException(StringConsts.SLIM_BAD_HEADER_ERROR);
+          reader.ReadByte() != (byte)((Header >> 8) & 0xff) ||
+          reader.ReadByte() != (byte)(Header & 0xff)
+         ) throw new SlimException(StringConsts.BadHeaderError);
     }
 
-    private struct rootTypeBox
+    private struct RootTypeBox
     {
       public Type TypeValue;
     }

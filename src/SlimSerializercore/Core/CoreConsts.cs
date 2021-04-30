@@ -11,7 +11,7 @@ namespace SlimSerializer.Core
   /// </summary>
   internal static class CoreConsts
   {
-    public const string NULL_STRING = "<null>";
-    public const string UNKNOWN = "<unknown>";
+    public const string NullString = "<null>";
+    public const string Unknown = "<unknown>";
   }
 }

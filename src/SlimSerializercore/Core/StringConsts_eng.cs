@@ -12,66 +12,66 @@ namespace SlimSerializer.Core
   /// </summary>
   internal static class StringConsts
   {
-    internal const string ARGUMENT_ERROR = "Argument error: ";
-    internal const string BUILD_INFO_READ_ERROR =
+    internal const string ArgumentError = "Argument error: ";
+    internal const string BuildInfoReadError =
             "Error reading BUILD_INFO resource: ";
-    internal const string SLIM_STREAM_CORRUPTED_ERROR = "Slim data stream is corrupted: ";
-    internal const string STREAM_READ_EOF_ERROR =
+    internal const string StreamCorruptedError = "Slim data stream is corrupted: ";
+    internal const string StreamReadEofError =
         "Stream EOF before operation could complete: ";
 
 
-    internal const string SLIM_READ_X_ARRAY_MAX_SIZE_ERROR =
+    internal const string ReadXArrayMaxSizeError =
         "Slim reader could not read requested array of {0} {1} as it exceeds the maximum limit of {2} bytes'";
 
-    internal const string SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR =
+    internal const string WriteXArrayMaxSizeError =
         "Slim writer could not write requested array of {0} {1} as it exceeds the maximum limit of {2} bytes'";
 
 
 
-    internal const string SLIM_SERIALIZATION_EXCEPTION_ERROR =
+    internal const string SerializationExceptionError =
         "Exception in SlimSerializer.Serialize():  ";
 
-    internal const string SLIM_DESERIALIZATION_EXCEPTION_ERROR =
+    internal const string DeserializationExceptionError =
         "Exception in SlimSerializer.Deserialize():  ";
 
 
-    internal const string SLIM_DESERIALIZE_CALLBACK_ERROR =
+    internal const string DeserializeCallbackError =
         "Exception leaked from OnDeserializationCallback() invoked by SlimSerializer. Error:  ";
 
-    internal const string SLIM_ISERIALIZABLE_MISSING_CTOR_ERROR =
+    internal const string IserializableMissingCtorError =
         "ISerializable object does not implement .ctor(SerializationInfo, StreamingContext): ";
 
-    internal const string SLIM_BAD_HEADER_ERROR =
+    internal const string BadHeaderError =
         "Bad SLIM format header";
 
-    internal const string SLIM_TREG_COUNT_ERROR =
+    internal const string TregCountError =
         "Slim type registry count mismatch";
 
-    internal const string SLIM_TREG_CSUM_ERROR =
+    internal const string TregCsumError =
         "Slim type registry CSUM mismatch";
 
-    public const string SLIM_HNDLTOREF_MISSING_TYPE_NAME_ERROR =
+    public const string HndltorefMissingTypeNameError =
         "HandleToReference(). Missing type name: ";
 
-    internal const string SLIM_ARRAYS_TYPE_NOT_ARRAY_ERROR =
+    internal const string ArraysTypeNotArrayError =
         "DescriptorToArray(). Type is not array : ";
 
-    internal const string SLIM_ARRAYS_MISSING_ARRAY_DIMS_ERROR =
+    internal const string ArraysMissingArrayDimsError =
         "DescriptorToArray(). Missing array dimensions: ";
 
-    internal const string SLIM_ARRAYS_OVER_MAX_DIMS_ERROR =
+    internal const string ArraysOverMaxDimsError =
         "Slim does not support an array with {0} dimensions. Only up to {1} maximum array dimensions supported";
 
-    internal const string SLIM_ARRAYS_OVER_MAX_ELM_ERROR =
+    internal const string ArraysOverMaxElmError =
         "Slim does not support an array with {0} elements. Only up to {1} maximum array elements supported";
 
-    internal const string SLIM_ARRAYS_WRONG_ARRAY_DIMS_ERROR =
+    internal const string ArraysWrongArrayDimsError =
         "DescriptorToArray(). Wrong array dimensions: ";
 
-    internal const string SLIM_ARRAYS_ARRAY_INSTANCE_ERROR =
+    internal const string ArraysArrayInstanceError =
         "DescriptorToArray(). Error instantiating array '";
 
-    internal const string SLIM_SER_PROHIBIT_ERROR =
+    internal const string SerProhibitError =
         "Slim can not process type '{0}' as it is marked with [{1}] attribute";
   }
 }

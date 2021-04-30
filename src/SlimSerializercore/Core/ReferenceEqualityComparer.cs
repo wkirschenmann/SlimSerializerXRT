@@ -16,12 +16,12 @@ namespace SlimSerializer.Core
   {
     public static readonly ReferenceEqualityComparer<T> Instance = new ReferenceEqualityComparer<T>();
 
-    private ReferenceEqualityComparer() {}
+    private ReferenceEqualityComparer() { }
 
-    public bool Equals(T x, T y) => object.ReferenceEquals(x, y);
+    public bool Equals(T x, T y) => ReferenceEquals(x, y);
     public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
 
-    bool IEqualityComparer.Equals(object x, object y) => object.ReferenceEquals(x, y);
+    bool IEqualityComparer.Equals(object x, object y) => ReferenceEquals(x, y);
     int IEqualityComparer.GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
   }
 }

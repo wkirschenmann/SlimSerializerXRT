@@ -6,7 +6,6 @@
 
 using System.IO;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace SlimSerializer.Core
 {
@@ -22,9 +21,8 @@ namespace SlimSerializer.Core
 
       var frame = new StackFrame(1, true);
       var m = frame.GetMethod();
-      var from = string.Format("{0}.{1} at [{2}:{3}]",
-                        m.DeclaringType.FullName, m.Name,
-                        Path.GetFileName(frame.GetFileName()), frame.GetFileLineNumber());
+      var from =
+        $"{m.DeclaringType.FullName}.{m.Name} at [{Path.GetFileName(frame.GetFileName())}:{frame.GetFileLineNumber()}]";
 
       if (string.IsNullOrWhiteSpace(text))
         text = "Assertion failure";

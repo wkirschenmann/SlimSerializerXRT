@@ -14,9 +14,9 @@ namespace SlimSerializer
   ///  the ctor() on deserialization
   /// </summary>
   [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-  public class SlimDeserializationCtorSkipAttribute : Attribute
+  public sealed class SlimDeserializationCtorSkipAttribute : Attribute
   {
-    public SlimDeserializationCtorSkipAttribute(){ }
+    public SlimDeserializationCtorSkipAttribute() { }
   }
 
 
@@ -24,9 +24,9 @@ namespace SlimSerializer
   /// When set fails an attempt to serialize the decorated type
   /// </summary>
   [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
-  public class SlimSerializationProhibitedAttribute : Attribute
+  public sealed class SlimSerializationProhibitedAttribute : Attribute
   {
-    public SlimSerializationProhibitedAttribute(){ }
+    public SlimSerializationProhibitedAttribute() { }
   }
 
 }

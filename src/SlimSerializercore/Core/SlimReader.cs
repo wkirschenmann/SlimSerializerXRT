@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -11,28 +9,28 @@ namespace SlimSerializer.Core
   /// <summary>
   /// Reads primitives and other supported types from Slim-format stream. Use factory method of SlimFormat instance to create a new instance of SlimReader class
   /// </summary>
-  public class SlimReader : ReadingStreamer
+  internal class SlimReader : ReadingStreamer
   {
-    protected internal SlimReader() : base(null){ }
+    protected internal SlimReader() : base(null) { }
 
     /// <summary>
     /// Returns SlimFormat that this reader implements
     /// </summary>
-    public override StreamerFormat Format => SlimFormat.Instance;
+    internal override StreamerFormat Format => SlimFormat.Instance;
 
     public override bool ReadBool()
     {
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadBool(): eof");
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadBool(): eof");
 
-      return b!=0;
+      return b != 0;
     }
 
     public override bool? ReadNullableBool()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadBool();
+      if (has) return ReadBool();
 
       return null;
     }
@@ -40,9 +38,9 @@ namespace SlimSerializer.Core
 
     public override byte? ReadNullableByte()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadByte();
+      if (has) return ReadByte();
 
       return null;
     }
@@ -50,12 +48,12 @@ namespace SlimSerializer.Core
 
     public override byte[] ReadByteArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_BYTE_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "bytes", SlimFormat.MAX_BYTE_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxByteArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "bytes", SlimFormat.MaxByteArrayLen));
 
       var buf = new byte[len];
 
@@ -67,18 +65,18 @@ namespace SlimSerializer.Core
 
     public override int[] ReadIntArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_INT_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "ints", SlimFormat.MAX_INT_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxIntArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "ints", SlimFormat.MaxIntArrayLen));
 
       var result = new int[len];
 
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadInt();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadInt();
 
       return result;
     }
@@ -86,18 +84,18 @@ namespace SlimSerializer.Core
 
     public override long[] ReadLongArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_LONG_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "longs", SlimFormat.MAX_LONG_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxLongArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "longs", SlimFormat.MaxLongArrayLen));
 
       var result = new long[len];
 
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadLong();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadLong();
 
       return result;
     }
@@ -105,18 +103,18 @@ namespace SlimSerializer.Core
 
     public override double[] ReadDoubleArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_DOUBLE_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "doubles", SlimFormat.MAX_DOUBLE_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxDoubleArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "doubles", SlimFormat.MaxDoubleArrayLen));
 
       var result = new double[len];
 
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadDouble();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadDouble();
 
       return result;
     }
@@ -124,36 +122,36 @@ namespace SlimSerializer.Core
 
     public override float[] ReadFloatArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_FLOAT_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "floats", SlimFormat.MAX_FLOAT_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxFloatArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "floats", SlimFormat.MaxFloatArrayLen));
 
       var result = new float[len];
 
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadFloat();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadFloat();
 
       return result;
     }
 
     public override decimal[] ReadDecimalArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
-      if (len>SlimFormat.MAX_DECIMAL_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "decimals", SlimFormat.MAX_DECIMAL_ARRAY_LEN));
+      var len = ReadInt();
+      if (len > SlimFormat.MaxDecimalArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "decimals", SlimFormat.MaxDecimalArrayLen));
 
       var result = new decimal[len];
 
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadDecimal();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadDecimal();
 
       return result;
     }
@@ -161,14 +159,14 @@ namespace SlimSerializer.Core
 
     public override char ReadChar()
     {
-      return (char)this.ReadShort();
+      return (char)ReadShort();
     }
 
     public override char? ReadNullableChar()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadChar();
+      if (has) return ReadChar();
 
       return null;
     }
@@ -176,49 +174,49 @@ namespace SlimSerializer.Core
 
     public override char[] ReadCharArray()
     {
-      byte[] buf = this.ReadByteArray();
-      if (buf==null) return null;
+      var buf = ReadByteArray();
+      if (buf == null) return null;
 
-      return m_Encoding.GetChars(buf);
+      return encoding.GetChars(buf);
     }
 
 
     public override string[] ReadStringArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
-      var len = this.ReadInt();
+      var len = ReadInt();
 
-      if (len>SlimFormat.MAX_STRING_ARRAY_CNT)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(len, "strings", SlimFormat.MAX_STRING_ARRAY_CNT));
+      if (len > SlimFormat.MaxStringArrayCnt)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "strings", SlimFormat.MaxStringArrayCnt));
 
 
       var result = new string[len];
 
-      for(int i=0; i<len; i++)
-        result[i] = this.ReadString();
+      for (var i = 0; i < len; i++)
+        result[i] = ReadString();
 
       return result;
     }
 
     public override decimal ReadDecimal()
     {
-      var bits_0 = this.ReadInt();
-      var bits_1 = this.ReadInt();
-      var bits_2 = this.ReadInt();
-      var bits_3 = this.ReadByte();
-      return new Decimal(bits_0,
-                          bits_1,
-                          bits_2,
-                          (bits_3 & 0x80) != 0,
-                          (byte)(bits_3 & 0x7F));
+      var bits0 = ReadInt();
+      var bits1 = ReadInt();
+      var bits2 = ReadInt();
+      var bits3 = ReadByte();
+      return new decimal(bits0,
+                          bits1,
+                          bits2,
+                          (bits3 & 0x80) != 0,
+                          (byte)(bits3 & 0x7F));
     }
 
     public override decimal? ReadNullableDecimal()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDecimal();
+      if (has) return ReadDecimal();
 
       return null;
     }
@@ -226,28 +224,28 @@ namespace SlimSerializer.Core
 
     public unsafe override double ReadDouble()
     {
-      ReadFromStream(m_Buff32, 8);
+      ReadFromStream(Buff32, 8);
 
-      uint seg1 = (uint)((int)m_Buff32[0] |
-                          (int)m_Buff32[1] << 8 |
-                          (int)m_Buff32[2] << 16 |
-                          (int)m_Buff32[3] << 24);
+      var seg1 = (uint)((int)Buff32[0] |
+                        (int)Buff32[1] << 8 |
+                        (int)Buff32[2] << 16 |
+                        (int)Buff32[3] << 24);
 
-      uint seg2 = (uint)((int)m_Buff32[4] |
-                          (int)m_Buff32[5] << 8 |
-                          (int)m_Buff32[6] << 16 |
-                          (int)m_Buff32[7] << 24);
+      var seg2 = (uint)((int)Buff32[4] |
+                        (int)Buff32[5] << 8 |
+                        (int)Buff32[6] << 16 |
+                        (int)Buff32[7] << 24);
 
-      ulong core = (ulong)seg2 << 32 | (ulong)seg1;
+      var core = (ulong)seg2 << 32 | (ulong)seg1;
 
       return *(double*)(&core);
     }
 
     public override double? ReadNullableDouble()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDouble();
+      if (has) return ReadDouble();
 
       return null;
     }
@@ -255,20 +253,20 @@ namespace SlimSerializer.Core
 
     public unsafe override float ReadFloat()
     {
-      ReadFromStream(m_Buff32, 4);
+      ReadFromStream(Buff32, 4);
 
-      uint core = (uint)((int)m_Buff32[0] |
-                          (int)m_Buff32[1] << 8 |
-                          (int)m_Buff32[2] << 16 |
-                          (int)m_Buff32[3] << 24);
+      var core = (uint)((int)Buff32[0] |
+                        (int)Buff32[1] << 8 |
+                        (int)Buff32[2] << 16 |
+                        (int)Buff32[3] << 24);
       return *(float*)(&core);
     }
 
     public override float? ReadNullableFloat()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadFloat();
+      if (has) return ReadFloat();
 
       return null;
     }
@@ -276,9 +274,9 @@ namespace SlimSerializer.Core
 
     public override int ReadInt()
     {
-      int result = 0;
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadInt(): eof");
+      var result = 0;
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt(): eof");
 
       var neg = ((b & 1) != 0);
 
@@ -287,16 +285,16 @@ namespace SlimSerializer.Core
       result |= ((b & 0x7f) >> 1);
       var bitcnt = 6;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>31)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadInt()");
+        if (bitcnt > 31)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt()");
 
-          b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadInt(): eof");
-          has = (b & 0x80) > 0;
-          result |= (b & 0x7f) << bitcnt;
-          bitcnt += 7;
+        b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt(): eof");
+        has = (b & 0x80) > 0;
+        result |= (b & 0x7f) << bitcnt;
+        bitcnt += 7;
       }
 
       return neg ? ~result : result;
@@ -305,9 +303,9 @@ namespace SlimSerializer.Core
 
     public override int? ReadNullableInt()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadInt();
+      if (has) return ReadInt();
 
       return null;
     }
@@ -315,8 +313,8 @@ namespace SlimSerializer.Core
     public override long ReadLong()
     {
       long result = 0;
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadLong(): eof");
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadLong(): eof");
 
       var neg = ((b & 1) != 0);
 
@@ -325,16 +323,16 @@ namespace SlimSerializer.Core
       result |= ((long)(b & 0x7f) >> 1);
       var bitcnt = 6;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>63)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadLong()");
+        if (bitcnt > 63)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadLong()");
 
-          b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadLong(): eof");
-          has = (b & 0x80) > 0;
-          result |= (long)(b & 0x7f) << bitcnt;
-          bitcnt += 7;
+        b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadLong(): eof");
+        has = (b & 0x80) > 0;
+        result |= (long)(b & 0x7f) << bitcnt;
+        bitcnt += 7;
       }
 
       return neg ? ~result : result;
@@ -343,9 +341,9 @@ namespace SlimSerializer.Core
 
     public override long? ReadNullableLong()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadLong();
+      if (has) return ReadLong();
 
       return null;
     }
@@ -353,16 +351,16 @@ namespace SlimSerializer.Core
 
     public override sbyte ReadSByte()
     {
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadSByte(): eof");
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadSByte(): eof");
       return (sbyte)b;
     }
 
     public override sbyte? ReadNullableSByte()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadSByte();
+      if (has) return ReadSByte();
 
       return null;
     }
@@ -371,8 +369,8 @@ namespace SlimSerializer.Core
     public override short ReadShort()
     {
       short result = 0;
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadShort(): eof");
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadShort(): eof");
 
       var neg = ((b & 1) != 0);
 
@@ -381,16 +379,16 @@ namespace SlimSerializer.Core
       result |= (short)((b & 0x7f) >> 1);
       var bitcnt = 6;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>15)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadShort()");
+        if (bitcnt > 15)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadShort()");
 
-          b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadShort(): eof");
-          has = (b & 0x80) > 0;
-          result |= (short)((b & 0x7f) << bitcnt);
-          bitcnt += 7;
+        b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadShort(): eof");
+        has = (b & 0x80) > 0;
+        result |= (short)((b & 0x7f) << bitcnt);
+        bitcnt += 7;
       }
 
       return (short)(neg ? ~result : result);
@@ -398,7 +396,7 @@ namespace SlimSerializer.Core
 
     public override short? ReadNullableShort()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
       if (has) return ReadShort();
 
@@ -407,26 +405,26 @@ namespace SlimSerializer.Core
 
     public override string ReadString()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var bsz = this.ReadInt();
-      if (bsz<SlimFormat.STR_BUF_SZ)
+      var bsz = ReadInt();
+      if (bsz < SlimFormat.StrBufSz)
       {
-        if (SlimFormat.ts_StrBuff==null) SlimFormat.ts_StrBuff = new byte[SlimFormat.STR_BUF_SZ];
-        ReadFromStream(SlimFormat.ts_StrBuff, bsz);
-        return m_Encoding.GetString(SlimFormat.ts_StrBuff, 0, bsz);
+        if (SlimFormat.TsStrBuff == null) SlimFormat.TsStrBuff = new byte[SlimFormat.StrBufSz];
+        ReadFromStream(SlimFormat.TsStrBuff, bsz);
+        return encoding.GetString(SlimFormat.TsStrBuff, 0, bsz);
       }
 
 
-      if (bsz>SlimFormat.MAX_BYTE_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_READ_X_ARRAY_MAX_SIZE_ERROR.Args(bsz, "string bytes", SlimFormat.MAX_BYTE_ARRAY_LEN));
+      if (bsz > SlimFormat.MaxByteArrayLen)
+        throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(bsz, "string bytes", SlimFormat.MaxByteArrayLen));
 
       var buf = new byte[bsz];
 
       ReadFromStream(buf, bsz);
 
-      return m_Encoding.GetString(buf);
+      return encoding.GetString(buf);
     }
 
     public override uint ReadUInt()
@@ -435,16 +433,16 @@ namespace SlimSerializer.Core
       var bitcnt = 0;
       var has = true;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>31)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadUInt()");
+        if (bitcnt > 31)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadUInt()");
 
-          var b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadUInt(): eof");
-          has = (b & 0x80) != 0;
-          result |= (uint)(b & 0x7f) << bitcnt;
-          bitcnt += 7;
+        var b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadUInt(): eof");
+        has = (b & 0x80) != 0;
+        result |= (uint)(b & 0x7f) << bitcnt;
+        bitcnt += 7;
       }
 
       return result;
@@ -452,9 +450,9 @@ namespace SlimSerializer.Core
 
     public override uint? ReadNullableUInt()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadUInt();
+      if (has) return ReadUInt();
 
       return null;
     }
@@ -466,16 +464,16 @@ namespace SlimSerializer.Core
       var bitcnt = 0;
       var has = true;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>63)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadULong()");
+        if (bitcnt > 63)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadULong()");
 
-          var b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadULong(): eof");
-          has = (b & 0x80) > 0;
-          result |= (ulong)(b & 0x7f) << bitcnt;
-          bitcnt += 7;
+        var b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadULong(): eof");
+        has = (b & 0x80) > 0;
+        result |= (ulong)(b & 0x7f) << bitcnt;
+        bitcnt += 7;
       }
 
       return result;
@@ -483,9 +481,9 @@ namespace SlimSerializer.Core
 
     public override ulong? ReadNullableULong()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadULong();
+      if (has) return ReadULong();
 
       return null;
     }
@@ -496,16 +494,16 @@ namespace SlimSerializer.Core
       var bitcnt = 0;
       var has = true;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>31)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadUShort()");
+        if (bitcnt > 31)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadUShort()");
 
-          var b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadUShort(): eof");
-          has = (b & 0x80) > 0;
-          result |= (ushort)((b & 0x7f) << bitcnt);
-          bitcnt += 7;
+        var b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadUShort(): eof");
+        has = (b & 0x80) > 0;
+        result |= (ushort)((b & 0x7f) << bitcnt);
+        bitcnt += 7;
       }
 
       return result;
@@ -513,9 +511,9 @@ namespace SlimSerializer.Core
 
     public override ushort? ReadNullableUShort()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadUShort();
+      if (has) return ReadUShort();
 
       return null;
     }
@@ -523,36 +521,36 @@ namespace SlimSerializer.Core
 
     public override MetaHandle ReadMetaHandle()
     {
-      uint handle = 0;
-      var b = m_Stream.ReadByte();
-      if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadMetaHandle(): eof");
+      var handle = 0;
+      var b = stream.ReadByte();
+      if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadMetaHandle(): eof");
 
       var meta = ((b & 1) != 0);
 
 
       var has = (b & 0x80) > 0;
-      handle |= ((uint)(b & 0x7f) >> 1);
+      handle |= ((b & 0x7f) >> 1);
       var bitcnt = 6;
 
-      while(has)
+      while (has)
       {
-          if (bitcnt>31)
-          throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadMetaHandle()");
+        if (bitcnt > 31)
+          throw new SlimException(StringConsts.StreamCorruptedError + "ReadMetaHandle()");
 
-          b = m_Stream.ReadByte();
-          if (b<0) throw new SlimException(StringConsts.SLIM_STREAM_CORRUPTED_ERROR + "ReadMetaHandle(): eof");
-          has = (b & 0x80) > 0;
-          handle |= (uint)(b & 0x7f) << bitcnt;
-          bitcnt += 7;
+        b = stream.ReadByte();
+        if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadMetaHandle(): eof");
+        has = (b & 0x80) > 0;
+        handle |= (b & 0x7f) << bitcnt;
+        bitcnt += 7;
       }
 
       if (meta)
       {
-          var sv = ReadString();
-          if (sv!=null)
-          return new MetaHandle(true, handle, new VarIntStr( sv ));
-          else
-          return new MetaHandle(true, handle, new VarIntStr( ReadUInt() ));
+        var sv = ReadString();
+        if (sv != null)
+          return new MetaHandle(true, handle, new VarIntStr(sv));
+        else
+          return new MetaHandle(true, handle, new VarIntStr(ReadInt()));
       }
 
       return new MetaHandle(true, handle);
@@ -561,9 +559,9 @@ namespace SlimSerializer.Core
 
     public override MetaHandle? ReadNullableMetaHandle()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadMetaHandle();
+      if (has) return ReadMetaHandle();
 
       return null;
     }
@@ -572,16 +570,16 @@ namespace SlimSerializer.Core
 
     public override DateTime ReadDateTime()
     {
-      var ticks = (long) m_Stream.ReadBEUInt64();
-      var kind = (DateTimeKind) m_Stream.ReadByte();
+      var ticks = (long)stream.ReadBeuInt64();
+      var kind = (DateTimeKind)stream.ReadByte();
       return new DateTime(ticks, kind);
     }
 
     public override DateTime? ReadNullableDateTime()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDateTime();
+      if (has) return ReadDateTime();
 
       return null;
     }
@@ -589,15 +587,15 @@ namespace SlimSerializer.Core
 
     public override TimeSpan ReadTimeSpan()
     {
-      var ticks = this.ReadLong();
+      var ticks = ReadLong();
       return TimeSpan.FromTicks(ticks);
     }
 
     public override TimeSpan? ReadNullableTimeSpan()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadTimeSpan();
+      if (has) return ReadTimeSpan();
 
       return null;
     }
@@ -605,32 +603,32 @@ namespace SlimSerializer.Core
 
     public override Guid ReadGuid()
     {
-      var arr = this.ReadByteArray();
+      var arr = ReadByteArray();
       return new Guid(arr);
     }
 
     public override Guid? ReadNullableGuid()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadGuid();
+      if (has) return ReadGuid();
 
       return null;
     }
 
     public override VarIntStr ReadVarIntStr()
     {
-      var str = this.ReadString();
-      if (str!=null) return new VarIntStr(str);
+      var str = ReadString();
+      if (str != null) return new VarIntStr(str);
 
-      return new VarIntStr( this.ReadUInt() );
+      return new VarIntStr(ReadInt());
     }
 
     public override VarIntStr? ReadNullableVarIntStr()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadVarIntStr();
+      if (has) return ReadVarIntStr();
 
       return null;
     }

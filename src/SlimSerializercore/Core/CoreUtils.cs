@@ -1,49 +1,69 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace SlimSerializer.Core
 {
+  internal static class EnumerableExt
+  {
+    internal static IEnumerable<T> Add<T>(this IEnumerable<T> source, IEnumerable<T> elements)
+    {
+      foreach (var s in source)
+      {
+        yield return s;
+      }
+
+      foreach (var e in elements)
+      {
+        yield return e;
+      }
+    }
+
+    internal static IEnumerable<T> Prepend<T>(this IEnumerable<T> source, T elem)
+    {
+      yield return elem;
+      foreach (var s in source)
+      {
+        yield return s;
+      }
+    }
+  }
+
   /// <summary>
   /// Provides core utility functions used by the majority of projects
   /// </summary>
-  public static class CoreUtils
+  internal static class CoreUtils
   {
     /// <summary>
     /// Writes exception message with exception type
     /// </summary>
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public static string ToMessageWithType(this Exception error)
-    {
-      if (error == null) return null;
-      return "[{0}] {1}".Args(error.GetType().FullName, error.Message);
-    }
+    internal static string ToMessageWithType(this Exception error) => 
+      error == null ? null : "[{0}] {1}".Args(error.GetType().FullName, error.Message);
 
     /// <summary>
     /// Returns the name of the type with expanded generic argument names.
     /// This helper is useful for printing class names to logs/messages.
     ///   List'1[System.Object]  ->  List&lt;Object&gt;
     /// </summary>
-    public static string DisplayNameWithExpandedGenericArgs(this Type type)
+    internal static string DisplayNameWithExpandedGenericArgs(this Type type)
     {
+      var genericArguments = type.GetGenericArguments();
 
-      var gargs = type.GetGenericArguments();
-
-      if (gargs.Length == 0)
+      if (genericArguments.Length == 0)
       {
         return type.Name;
       }
 
       var sb = new StringBuilder();
 
-      for (int i = 0; i < gargs.Length; i++)
+      for (var i = 0; i < genericArguments.Length; i++)
       {
         if (i > 0) sb.Append(", ");
-        sb.Append(gargs[i].DisplayNameWithExpandedGenericArgs());
+        sb.Append(genericArguments[i].DisplayNameWithExpandedGenericArgs());
       }
 
       var nm = type.Name;

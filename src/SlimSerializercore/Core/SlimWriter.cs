@@ -11,7 +11,7 @@ namespace SlimSerializer.Core
   /// <summary>
   /// Writes primitives and other supported types to Slim-format stream. Use factory method of SlimFormat instance to create a new instance of SlimWriter class
   /// </summary>
-  public class SlimWriter : WritingStreamer
+  internal class SlimWriter : WritingStreamer
   {
     protected internal SlimWriter() : base(null) { }
 
@@ -19,268 +19,268 @@ namespace SlimSerializer.Core
     /// <summary>
     /// Returns SlimFormat that this writer implements
     /// </summary>
-    public override StreamerFormat Format => SlimFormat.Instance;
+    internal override StreamerFormat Format => SlimFormat.Instance;
 
 
     public override void Flush()
     {
-      m_Stream.Flush();
+      stream.Flush();
     }
 
 
     public override void Write(bool value)
     {
-      m_Stream.WriteByte( value ? (byte)0xff : (byte)0);
+      stream.WriteByte(value ? (byte)0xff : (byte)0);
     }
 
     public override void Write(bool? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(byte? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
-        this.Write(value.Value);
+        Write(true);
+        Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(byte[] buffer)
     {
-      if (buffer==null)
+      if (buffer == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = buffer.Length;
-      if (len>SlimFormat.MAX_BYTE_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "bytes", SlimFormat.MAX_BYTE_ARRAY_LEN));
+      if (len > SlimFormat.MaxByteArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "bytes", SlimFormat.MaxByteArrayLen));
 
-      this.Write(len);
-      m_Stream.Write(buffer, 0, len);
+      Write(len);
+      stream.Write(buffer, 0, len);
     }
 
 
     public override void Write(int[] value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
-      if (len>SlimFormat.MAX_INT_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "ints", SlimFormat.MAX_INT_ARRAY_LEN));
+      if (len > SlimFormat.MaxIntArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "ints", SlimFormat.MaxIntArrayLen));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(value[i]); //WITH compression
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(value[i]); //WITH compression
     }
 
 
     public override void Write(long[] value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
-      if (len>SlimFormat.MAX_LONG_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "longs", SlimFormat.MAX_LONG_ARRAY_LEN));
+      if (len > SlimFormat.MaxLongArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "longs", SlimFormat.MaxLongArrayLen));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(value[i]); //WITH compression
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(value[i]); //WITH compression
     }
 
 
     public override void Write(double[] value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
-      if (len>SlimFormat.MAX_DOUBLE_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "doubles", SlimFormat.MAX_DOUBLE_ARRAY_LEN));
+      if (len > SlimFormat.MaxDoubleArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "doubles", SlimFormat.MaxDoubleArrayLen));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(value[i]);
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(value[i]);
     }
 
     public override void Write(float[] value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
-      if (len>SlimFormat.MAX_FLOAT_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "floats", SlimFormat.MAX_FLOAT_ARRAY_LEN));
+      if (len > SlimFormat.MaxFloatArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "floats", SlimFormat.MaxFloatArrayLen));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(value[i]);
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(value[i]);
     }
 
     public override void Write(decimal[] value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
-      if (len>SlimFormat.MAX_DECIMAL_ARRAY_LEN)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "decimals", SlimFormat.MAX_DECIMAL_ARRAY_LEN));
+      if (len > SlimFormat.MaxDecimalArrayLen)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "decimals", SlimFormat.MaxDecimalArrayLen));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(value[i]);
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(value[i]);
     }
 
 
     public override void Write(char ch)
     {
-      this.Write((short)ch);
+      Write((short)ch);
     }
 
     public override void Write(char? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
 
     public override void Write(char[] buffer)
     {
-      if (buffer==null)
+      if (buffer == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
 
-      var buf = m_Encoding.GetBytes(buffer);
-      this.Write(buf);
+      var buf = encoding.GetBytes(buffer);
+      Write(buf);
     }
 
 
     public override void Write(string[] array)
     {
-      if (array==null)
+      if (array == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = array.Length;
-      if (len>SlimFormat.MAX_STRING_ARRAY_CNT)
-        throw new SlimException(StringConsts.SLIM_WRITE_X_ARRAY_MAX_SIZE_ERROR.Args(len, "strings", SlimFormat.MAX_STRING_ARRAY_CNT));
+      if (len > SlimFormat.MaxStringArrayCnt)
+        throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "strings", SlimFormat.MaxStringArrayCnt));
 
-      this.Write(len);
-      for(int i=0; i<len; i++)
-        this.Write(array[i]);
+      Write(len);
+      for (var i = 0; i < len; i++)
+        Write(array[i]);
     }
 
     public override void Write(decimal value)
     {
       var bits = decimal.GetBits(value);
-      this.Write( bits[0] );
-      this.Write( bits[1] );
-      this.Write( bits[2] );
+      Write(bits[0]);
+      Write(bits[1]);
+      Write(bits[2]);
 
-      byte sign = (bits[3] & 0x80000000) != 0 ? (byte)0x80 : (byte)0x00;
-      byte scale = (byte) ((bits[3] >> 16) & 0x7F);
+      var sign = (bits[3] & 0x80000000) != 0 ? (byte)0x80 : (byte)0x00;
+      var scale = (byte)((bits[3] >> 16) & 0x7F);
 
-      this.Write( (byte)(sign | scale) );
+      Write((byte)(sign | scale));
     }
 
     public override void Write(decimal? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public unsafe override void Write(double value)
     {
-      ulong core = *(ulong*)(&value);
+      var core = *(ulong*)(&value);
 
-      m_Buff32[0] = (byte)core;
-      m_Buff32[1] = (byte)(core >> 8);
-      m_Buff32[2] = (byte)(core >> 16);
-      m_Buff32[3] = (byte)(core >> 24);
-      m_Buff32[4] = (byte)(core >> 32);
-      m_Buff32[5] = (byte)(core >> 40);
-      m_Buff32[6] = (byte)(core >> 48);
-      m_Buff32[7] = (byte)(core >> 56);
+      Buff32[0] = (byte)core;
+      Buff32[1] = (byte)(core >> 8);
+      Buff32[2] = (byte)(core >> 16);
+      Buff32[3] = (byte)(core >> 24);
+      Buff32[4] = (byte)(core >> 32);
+      Buff32[5] = (byte)(core >> 40);
+      Buff32[6] = (byte)(core >> 48);
+      Buff32[7] = (byte)(core >> 56);
 
-      m_Stream.Write(m_Buff32, 0, 8);
+      stream.Write(Buff32, 0, 8);
     }
 
     public override void Write(double? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public unsafe override void Write(float value)
     {
-      uint core = *(uint*)(&value);
-      m_Buff32[0] = (byte)core;
-      m_Buff32[1] = (byte)(core >> 8);
-      m_Buff32[2] = (byte)(core >> 16);
-      m_Buff32[3] = (byte)(core >> 24);
-      m_Stream.Write(m_Buff32, 0, 4);
+      var core = *(uint*)(&value);
+      Buff32[0] = (byte)core;
+      Buff32[1] = (byte)(core >> 8);
+      Buff32[2] = (byte)(core >> 16);
+      Buff32[3] = (byte)(core >> 24);
+      stream.Write(Buff32, 0, 4);
     }
 
     public override void Write(float? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -288,26 +288,26 @@ namespace SlimSerializer.Core
     {
       byte b = 0;
 
-      if (value<0)
+      if (value < 0)
       {
         b = 1;
         value = ~value;//turn off minus bit but dont +1
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
-      value = value >> 6;
+      value >>= 6;
       var has = value != 0;
       if (has)
-          b = (byte)(b | 0x80);
-      m_Stream.WriteByte(b);
-      while(has)
+        b = (byte)(b | 0x80);
+      stream.WriteByte(b);
+      while (has)
       {
         b = (byte)(value & 0x7f);
-        value = value >> 7;
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -315,37 +315,37 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(long value)
     {
       byte b = 0;
 
-      if (value<0)
+      if (value < 0)
       {
         b = 1;
         value = ~value;//turn off minus bit but dont +1
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
-      value = value >> 6;
+      value >>= 6;
       var has = value != 0;
       if (has)
-          b = (byte)(b | 0x80);
-      m_Stream.WriteByte(b);
-      while(has)
+        b = (byte)(b | 0x80);
+      stream.WriteByte(b);
+      while (has)
       {
         b = (byte)(value & 0x7f);
-        value = value >> 7;
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -353,28 +353,28 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(sbyte value)
     {
-      m_Stream.WriteByte((byte)value);
+      stream.WriteByte((byte)value);
     }
 
     public override void Write(sbyte? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -382,7 +382,7 @@ namespace SlimSerializer.Core
     {
       byte b = 0;
 
-      if (value<0)
+      if (value < 0)
       {
         b = 1;
         value = (short)~value;//turn off minus bit but dont +1
@@ -392,16 +392,16 @@ namespace SlimSerializer.Core
       value = (short)(value >> 6);
       var has = value != 0;
       if (has)
-          b = (byte)(b | 0x80);
-      m_Stream.WriteByte(b);
-      while(has)
+        b = (byte)(b | 0x80);
+      stream.WriteByte(b);
+      while (has)
       {
         b = (byte)(value & 0x7f);
         value = (short)(value >> 7);
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -409,52 +409,52 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(string value)
     {
-      if (value==null)
+      if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
 
-      this.Write(true);
+      Write(true);
 
       var len = value.Length;
-      if (len>SlimFormat.MAX_STR_LEN)//This is much faster than Encoding.GetByteCount()
+      if (len > SlimFormat.MaxStrLen)//This is much faster than Encoding.GetByteCount()
       {
-        var buf = m_Encoding.GetBytes(value);
-        this.Write(buf.Length);
-        m_Stream.Write(buf, 0, buf.Length);
+        var buf = encoding.GetBytes(value);
+        Write(buf.Length);
+        stream.Write(buf, 0, buf.Length);
         return;
       }
 
       //try to reuse pre-allocated buffer
-      if (SlimFormat.ts_StrBuff==null) SlimFormat.ts_StrBuff = new byte[SlimFormat.STR_BUF_SZ];
-      var bcnt = m_Encoding.GetBytes(value, 0, len, SlimFormat.ts_StrBuff, 0);
+      if (SlimFormat.TsStrBuff == null) SlimFormat.TsStrBuff = new byte[SlimFormat.StrBufSz];
+      var bcnt = encoding.GetBytes(value, 0, len, SlimFormat.TsStrBuff, 0);
 
-      this.Write(bcnt);
-      m_Stream.Write(SlimFormat.ts_StrBuff, 0, bcnt);
+      Write(bcnt);
+      stream.Write(SlimFormat.TsStrBuff, 0, bcnt);
     }
 
     public override void Write(uint value)
     {
       var has = true;
-      while(has)
+      while (has)
       {
-        byte b = (byte)(value & 0x7f);
-        value = value >> 7;
+        var b = (byte)(value & 0x7f);
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -462,24 +462,24 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(ulong value)
     {
       var has = true;
-      while(has)
+      while (has)
       {
-        byte b = (byte)(value & 0x7f);
-        value = value >> 7;
+        var b = (byte)(value & 0x7f);
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -487,25 +487,25 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(ushort value)
     {
       var has = true;
-      while(has)
+      while (has)
       {
-        byte b = (byte)(value & 0x7f);
+        var b = (byte)(value & 0x7f);
         value = (ushort)(value >> 7);
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
     }
 
@@ -513,11 +513,11 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -526,35 +526,35 @@ namespace SlimSerializer.Core
     {
       var meta = value.Metadata.HasValue;
 
-      var handle = value.m_Handle;
+      var handle = value.Handle;
 
       byte b = 0;
 
       if (meta) b = 1;
 
       b = (byte)(b | ((handle & 0x3f) << 1));
-      handle = (handle >> 6);
+      handle >>= 6;
       var has = handle != 0;
       if (has)
-          b = (byte)(b | 0x80);
-      m_Stream.WriteByte(b);
-      while(has)
+        b = (byte)(b | 0x80);
+      stream.WriteByte(b);
+      while (has)
       {
         b = (byte)(handle & 0x7f);
-        handle = (handle >> 7);
+        handle >>= 7;
         has = handle != 0;
         if (has)
           b = (byte)(b | 0x80);
-        m_Stream.WriteByte(b);
+        stream.WriteByte(b);
       }
 
       if (meta)
       {
         var vis = value.Metadata.Value;
-        this.Write( vis.StringValue );
+        Write(vis.StringValue);
 
-        if (vis.StringValue==null)
-          this.Write( vis.IntValue );
+        if (vis.StringValue == null)
+          Write(vis.IntValue);
       }
     }
 
@@ -563,11 +563,11 @@ namespace SlimSerializer.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -576,70 +576,70 @@ namespace SlimSerializer.Core
     {
       //Prior to 20150626 DKh
       //this.Write(value.ToBinary());
-      m_Stream.WriteBEUInt64((ulong)value.Ticks );
-      m_Stream.WriteByte( (byte)value.Kind );
+      stream.WriteBeuInt64((ulong)value.Ticks);
+      stream.WriteByte((byte)value.Kind);
     }
 
     public override void Write(DateTime? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(TimeSpan value)
     {
-      this.Write(value.Ticks);
+      Write(value.Ticks);
     }
 
     public override void Write(TimeSpan? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(Guid value)
     {
-      this.Write(value.ToByteArray());
+      Write(value.ToByteArray());
     }
 
     public override void Write(Guid? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(VarIntStr value)
     {
-      this.Write(value.StringValue);
-      if (value.StringValue==null)
-        this.Write(value.IntValue);
+      Write(value.StringValue);
+      if (value.StringValue == null)
+        Write(value.IntValue);
     }
 
     public override void Write(VarIntStr? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
   }

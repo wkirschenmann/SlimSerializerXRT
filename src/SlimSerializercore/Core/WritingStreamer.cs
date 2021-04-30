@@ -12,10 +12,10 @@ namespace SlimSerializer.Core
   /// <summary>
   /// Writes primitives to stream
   /// </summary>
-  public abstract class WritingStreamer : Streamer
+  internal abstract class WritingStreamer : Streamer
   {
     #region .ctor
-    protected WritingStreamer(Encoding encoding=null) : base(encoding)
+    protected WritingStreamer(Encoding encoding = null) : base(encoding)
     {
     }
     #endregion
@@ -30,7 +30,7 @@ namespace SlimSerializer.Core
 
     public void Write(byte value)
     {
-      m_Stream.WriteByte(value);
+      stream.WriteByte(value);
     }
 
     public abstract void Write(byte? value);
