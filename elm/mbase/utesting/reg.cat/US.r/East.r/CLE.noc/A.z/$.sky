@@ -1,9 +1,0 @@
-zone
-{
-  name="A"
-
-  network-routing
-  {
-    route{ network="nocgov" to-address="*.1"}
-  }
-}

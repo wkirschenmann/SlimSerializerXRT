@@ -1,7 +1,0 @@
-application
-{
-  gdid-authority
-  {
-    authority-ids='8,9,a,b,c,d,e,f'
-  }
-}

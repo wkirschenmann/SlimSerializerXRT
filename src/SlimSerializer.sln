@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlimSerializercore", "SlimSerializercore\SlimSerializercore.csproj", "{3FD2052A-9C5B-4FAB-923E-E0A36A4B8455}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlimSerializer", "SlimSerializercore\SlimSerializer.csproj", "{3FD2052A-9C5B-4FAB-923E-E0A36A4B8455}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
