@@ -5,28 +5,21 @@
 </FILE_LICENSE>*/
 
 using System;
-
-
+[assembly:CLSCompliant(true)]
 namespace Slim
 {
   /// <summary>
   /// When set on a parameterless constructor, instructs the Slim serializer not to invoke
   ///  the ctor() on deserialization
   /// </summary>
-  [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-  public sealed class SlimDeserializationCtorSkipAttribute : Attribute
-  {
-    public SlimDeserializationCtorSkipAttribute() { }
-  }
+  [AttributeUsage(AttributeTargets.Constructor)]
+  public sealed class SlimDeserializationCtorSkipAttribute : Attribute {}
 
 
   /// <summary>
   /// When set fails an attempt to serialize the decorated type
   /// </summary>
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
-  public sealed class SlimSerializationProhibitedAttribute : Attribute
-  {
-    public SlimSerializationProhibitedAttribute() { }
-  }
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+  public sealed class SlimSerializationProhibitedAttribute : Attribute { }
 
 }

@@ -31,10 +31,10 @@ namespace Slim.Core
 
     }
 
-    protected byte[] Buff32;
+    protected byte[] Buff32 { get; private set; }
 
-    protected Stream Stream;
-    protected Encoding Encoding;
+    protected Stream Stream { get; private set; }
+    protected Encoding Encoding { get; private set; }
 
 
 

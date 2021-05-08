@@ -4,6 +4,9 @@
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
+using System;
+using System.Globalization;
+
 namespace Slim.Core
 {
   /// <summary>
@@ -19,7 +22,7 @@ namespace Slim.Core
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static string Args(this string tpl, params object[] args)
     {
-      return string.Format(tpl, args);
+      return string.Format(CultureInfo.InvariantCulture, tpl, args);
     }
 
     /// <summary>

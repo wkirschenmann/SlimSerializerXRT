@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Runtime.Serialization;
 
 namespace Slim.Core
@@ -133,27 +134,23 @@ namespace Slim.Core
            return MetaHandle.InlineValueType(vth);
          }
 
-         bool added;
+         var handle = GetIndex(reference, out var added);
 
-         uint handle = (uint)GetIndex(reference, out added);
+         if (!added) return new MetaHandle(handle);
+         
+         var th =  treg.GetTypeHandle(type, serializationForFrameWork);
 
-         if (added)
+         if (format.IsRefTypeSupported(type))//20150305 Refhandle inline
+           return MetaHandle.InlineRefType(th);
+
+         if (type.IsArray)//write array header like so:  "System.int[,]|0~10,0~12" or "$3|0~10,0~12"
          {
-              var th =  treg.GetTypeHandle(type, serializationForFrameWork);
-
-              if (format.IsRefTypeSupported(type))//20150305 Refhandle inline
-                return MetaHandle.InlineRefType(th);
-
-              if (type.IsArray)//write array header like so:  "System.int[,]|0~10,0~12" or "$3|0~10,0~12"
-              {
-                //DKh 20130712 Removed repetitive code that was refactored into Arrays class
-                var arr = (Array)reference;
-                th = new VarIntStr( Arrays.ArrayToDescriptor(arr, type, th) );
-              }
-
-              return new MetaHandle(handle, th);
+           //DKh 20130712 Removed repetitive code that was refactored into Arrays class
+           var arr = (Array)reference;
+           th = new VarIntStr( Arrays.ArrayToDescriptor(arr, type, th) );
          }
-         return new MetaHandle(handle);
+
+         return new MetaHandle(handle, th);
        }
 
 
@@ -163,67 +160,71 @@ namespace Slim.Core
        public object HandleToReference(MetaHandle handle, TypeRegistry treg, SlimFormat format, SlimReader reader)
        {
          Debug.Assert(m_Mode == SerializationOperation.Deserializing, "HandleToReference() called while serializing");
+         Contract.Requires(!(handle.Metadata is null), $"{nameof(handle)}.{nameof(MetaHandle.Metadata)} is not null");
+         if (handle.IsInlinedString)
+         {
+           return handle.Metadata.Value.StringValue;
+         }
 
-         if (handle.IsInlinedString) return handle.Metadata.Value.StringValue;
          if (handle.IsInlinedTypeValue)
          {
-           var tref = treg[ handle.Metadata.Value ];//adding this type to registry if it is not there yet
-           return tref;
+           var typeRef = treg.GetOrAddType(handle.Metadata.Value); //adding this type to registry if it is not there yet
+           return typeRef;
          }
 
          if (handle.IsInlinedRefType)
          {
-             var tref = treg[ handle.Metadata.Value ];//adding this type to registry if it is not there yet
-             var ra = format.GetReadActionForRefType(tref);
-             if (ra!=null)
-             {
-               var inst = ra(reader);
-               m_List.Add(inst);
-               return inst;
-             }
-             else
-              throw new SlimException("Internal error HandleToReference: no read action for ref type, but ref mhandle is inlined");
+           var typeRef = treg.GetOrAddType(handle.Metadata.Value); //adding this type to registry if it is not there yet
+           var ra = format.GetReadActionForRefType(typeRef);
+           if (ra != null)
+           {
+             var inst = ra(reader);
+             m_List.Add(inst);
+             return inst;
+           }
+           else
+             throw new SlimException(
+               "Internal error HandleToReference: no read action for ref type, but ref mhandle is inlined");
          }
 
 
-         int idx = (int)handle.Handle;
-         if (idx<m_List.Count) return m_List[idx];
+         var idx = (int) handle.Handle;
+         if (idx < m_List.Count) return m_List[idx];
 
          if (!handle.Metadata.HasValue)
-          throw new SlimException(StringConsts.HndltorefMissingTypeNameError + handle.ToString());
+           throw new SlimException(StringConsts.HndltorefMissingTypeNameError + handle.ToString());
 
          Type type;
          var metadata = handle.Metadata.Value;
 
-         if (metadata.StringValue!=null)//need to search for possible array descriptor
+         if (metadata.StringValue != null) //need to search for possible array descriptor
          {
-            var ip = metadata.StringValue.IndexOf('|');//array descriptor start
-            if (ip>0)
-            {
-              var tname =  metadata.StringValue.Substring(0, ip);
-              if (TypeRegistry.IsNullHandle(tname)) return null;
-              type = treg[ tname ];
-            }
-            else
-            {
-              if (TypeRegistry.IsNullHandle(metadata)) return null;
-              type = treg[ metadata ];
-            }
+           var ip = metadata.StringValue.IndexOf('|'); //array descriptor start
+           if (ip > 0)
+           {
+             var typeName = metadata.StringValue.Substring(0, ip);
+             if (TypeRegistry.IsNullHandle(typeName)) return null;
+             type = treg[typeName];
+           }
+           else
+           {
+             if (TypeRegistry.IsNullHandle(metadata)) return null;
+             type = treg.GetOrAddType(metadata);
+           }
          }
          else
          {
-            if (TypeRegistry.IsNullHandle(metadata)) return null;
-            type = treg[ metadata ];
+           if (TypeRegistry.IsNullHandle(metadata)) return null;
+           type = treg.GetOrAddType(metadata);
          }
 
-         object instance = null;
-
+         object instance;
          if (type.IsArray)
-              //DKh 20130712 Removed repetitive code that was refactored into Arrays class
-              instance = Arrays.DescriptorToArray(metadata.StringValue, type);
+           //DKh 20130712 Removed repetitive code that was refactored into Arrays class
+           instance = Arrays.DescriptorToArray(metadata.StringValue, type);
          else
-              //20130715 DKh
-              instance = SerializationUtils.MakeNewObjectInstance(type);
+           //20130715 DKh
+           instance = SerializationUtils.MakeNewObjectInstance(type);
 
          m_List.Add(instance);
          return instance;

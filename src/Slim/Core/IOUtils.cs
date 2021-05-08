@@ -5,6 +5,7 @@
 </FILE_LICENSE>*/
 
 using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 
 namespace Slim.Core
@@ -22,12 +23,12 @@ namespace Slim.Core
     /// </summary>
     public static ulong ReadBeuInt64(this Stream s)
     {
-      UInt64 res = 0;
+      ulong res = 0;
       for (var i = 0; i < 8; ++i)
       {
         var b = s.ReadByte();
         if (b < 0) throw new SlimException(StringConsts.StreamReadEofError + "ReadBEUInt64()");
-        res = (res << 8) + (UInt64)b;
+        res = (res << 8) + (ulong)b;
       }
       return res;
     }
@@ -35,8 +36,9 @@ namespace Slim.Core
     /// <summary>
     /// Writes an unsigned long integer encoded as big endian to the given stream
     /// </summary>
-    public static void WriteBeuInt64(this Stream s, UInt64 value)
+    public static void WriteBeuInt64(this Stream s, ulong value)
     {
+      Contract.Requires(!(s is null), $"{nameof(s)} is not null");
       for (var i = 0; i < 8; ++i)
       {
         s.WriteByte((byte)(value >> ((7 - i) * 8)));

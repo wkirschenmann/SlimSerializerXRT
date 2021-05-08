@@ -523,7 +523,7 @@ namespace Slim.Core
 
     public override MetaHandle ReadMetaHandle()
     {
-      uint handle = 0;
+      var handle = 0;
       var b = Stream.ReadByte();
       if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadMetaHandle(): eof");
 
@@ -531,7 +531,7 @@ namespace Slim.Core
 
 
       var has = (b & 0x80) > 0;
-      handle |= ((uint)(b & 0x7f) >> 1);
+      handle |= ((b & 0x7f) >> 1);
       var bitcnt = 6;
 
       while (has)
@@ -542,7 +542,7 @@ namespace Slim.Core
         b = Stream.ReadByte();
         if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadMetaHandle(): eof");
         has = (b & 0x80) > 0;
-        handle |= (uint)(b & 0x7f) << bitcnt;
+        handle |= (b & 0x7f) << bitcnt;
         bitcnt += 7;
       }
 

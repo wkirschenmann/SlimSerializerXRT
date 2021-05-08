@@ -13,8 +13,9 @@ namespace Slim.Core
     public VarIntStr(uint value) { IntValue = value; StringValue = null; }
     public VarIntStr(string value) { IntValue = 0; StringValue = value; }
 
-    public readonly uint IntValue;
-    public readonly string StringValue;
+    public string StringValue { get; }
+
+    public uint IntValue { get; }
 
     public override string ToString()
     {

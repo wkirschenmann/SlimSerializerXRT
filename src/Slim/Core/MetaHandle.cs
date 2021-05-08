@@ -19,21 +19,21 @@ namespace Slim.Core
   [Serializable]
   public struct MetaHandle : IEquatable<MetaHandle>
   {
-    internal const uint InlinedStringHandle = 0;
-    internal const uint InlinedValuetypeHandle = 1;
-    internal const uint InlinedReftypeHandle = 2;
-    internal const uint InlinedTypevalHandle = 3;
-    internal const uint HandleOffset = 4;
+    internal const int InlinedStringHandle = 0;
+    internal const int InlinedValuetypeHandle = 1;
+    internal const int InlinedReftypeHandle = 2;
+    internal const int InlinedTypevalHandle = 3;
+    internal const int HandleOffset = 4;
 
 
-    internal uint m_Handle;
+    internal int m_Handle;
     private VarIntStr? m_Metadata;
 
 
     /// <summary>
     /// Returns handle value. This value is invalid if special conditions such as inlining are true
     /// </summary>
-    public uint Handle { get { unchecked { return m_Handle - HandleOffset; } } }
+    public int Handle { get { unchecked { return m_Handle - HandleOffset; } } }
 
     /// <summary>
     /// Indicates whether a string instance is inlined in Metadata property
@@ -62,25 +62,25 @@ namespace Slim.Core
     public string StringMetadata => m_Metadata.HasValue ? m_Metadata.Value.StringValue : null;
 
 
-    public MetaHandle(uint handle)
+    public MetaHandle(int handle)
     {
       m_Handle = handle + HandleOffset;
       m_Metadata = null;
     }
 
-    public MetaHandle(bool serializer, uint handle)
+    public MetaHandle(bool serializer, int handle)
     {
       m_Handle = handle + (serializer ? 0 : HandleOffset);
       m_Metadata = null;
     }
 
-    public MetaHandle(uint handle, VarIntStr? metadata)
+    public MetaHandle(int handle, VarIntStr? metadata)
     {
       m_Handle = handle + HandleOffset;
       m_Metadata = metadata;
     }
 
-    internal MetaHandle(bool serializer, uint handle, VarIntStr? metadata)
+    internal MetaHandle(bool serializer, int handle, VarIntStr? metadata)
     {
       m_Handle = handle + (serializer ? 0 : HandleOffset);
       m_Metadata = metadata;
@@ -91,9 +91,11 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineString(string inlinedString)
     {
-      var result = new MetaHandle();
-      result.m_Handle = InlinedStringHandle;
-      result.m_Metadata = new VarIntStr(inlinedString);
+      var result = new MetaHandle
+      {
+        m_Handle = InlinedStringHandle,
+        m_Metadata = new VarIntStr(inlinedString)
+      };
       return result;
     }
 
@@ -103,9 +105,11 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineValueType(VarIntStr? inlinedValueType)
     {
-      var result = new MetaHandle();
-      result.m_Handle = InlinedValuetypeHandle;
-      result.m_Metadata = inlinedValueType;
+      var result = new MetaHandle
+      {
+        m_Handle = InlinedValuetypeHandle,
+        m_Metadata = inlinedValueType
+      };
       return result;
     }
 
@@ -114,9 +118,11 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineRefType(VarIntStr? inlinedRefType)
     {
-      var result = new MetaHandle();
-      result.m_Handle = InlinedReftypeHandle;
-      result.m_Metadata = inlinedRefType;
+      var result = new MetaHandle
+      {
+        m_Handle = InlinedReftypeHandle,
+        m_Metadata = inlinedRefType
+      };
       return result;
     }
 
@@ -125,17 +131,18 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineTypeValue(VarIntStr? inlinedTypeValue)
     {
-      var result = new MetaHandle();
-      result.m_Handle = InlinedTypevalHandle;
-      result.m_Metadata = inlinedTypeValue;
+      var result = new MetaHandle
+      {
+        m_Handle = InlinedTypevalHandle,
+        m_Metadata = inlinedTypeValue
+      };
       return result;
     }
 
     public override string ToString()
     {
-      return string.Format("[{0}] {1}",
-           IsInlinedString ? "string" : IsInlinedValueType ? "struct" : IsInlinedRefType ? "refobj" : Handle.ToString(),
-           Metadata);
+      return
+        $"[{(IsInlinedString ? "string" : IsInlinedValueType ? "struct" : IsInlinedRefType ? "refobj" : Handle.ToString())}] {Metadata}";
     }
 
     public override int GetHashCode()

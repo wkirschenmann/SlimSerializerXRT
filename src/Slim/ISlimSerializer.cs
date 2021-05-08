@@ -53,28 +53,5 @@ namespace Slim
   {
     void Serialize(Stream stream, object root);
     object Deserialize(Stream stream);
-
-    /// <summary>
-    /// Indicates whether Serialize/Deserialize may be called by multiple threads at the same time
-    /// </summary>
-    bool IsThreadSafe { get; }
-
-    /// <summary>
-    /// Gets/sets how serializer handles type information between calls to Serialize/Deserialize.
-    /// This property itself is not thread-safe, that is - it should be only set once by control/initiating thread
-    /// </summary>
-    TypeRegistryMode TypeMode { get; set; }
-
-    /// <summary>
-    /// Resets type registry state to initial state (which is based on global types) for TypeMode = "Batch",
-    /// otherwise does nothing
-    /// </summary>
-    void ResetCallBatch();
-
-    /// <summary>
-    /// Returns true if last call to Serialize or Deserialize in batch mode added more types to type registry.
-    /// This call is only valid in TypeMode = "Batch" and is inherently not thread-safe
-    /// </summary>
-    bool BatchTypesAdded { get; }
   }
 }

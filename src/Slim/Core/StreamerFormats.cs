@@ -88,7 +88,7 @@ namespace Slim.Core
       var t = this.WriterType;//typeof(TWriter);
 
       var wMethods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                      .Where(mi => mi.Name.Equals("Write") &&   //do not localize
+                      .Where(mi => mi.Name.Equals("Write", StringComparison.Ordinal) &&   //do not localize
                                   mi.ReturnType == typeof(void) &&
                                   mi.GetParameters().Length == 1);
 

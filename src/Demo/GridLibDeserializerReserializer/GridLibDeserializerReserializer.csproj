@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Slim\Slim.csproj" />
-    <ProjectReference Include="..\DataModel\DataModel.csproj" />
   </ItemGroup>
 
 </Project>

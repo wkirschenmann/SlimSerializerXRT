@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -19,7 +20,7 @@ namespace Slim.Core
   /// Provides misc serialization-related functions that are really low-level and not intended to be used by developers.
   /// Methods are thread-safe
   /// </summary>
-  public static class SerializationUtils
+  internal static class SerializationUtils
   {
 
     /// <summary>
@@ -27,6 +28,7 @@ namespace Slim.Core
     /// </summary>
     public static ConstructorInfo GetISerializableCtorInfo(Type type)
     {
+      Contract.Requires(!(type is null), $"{nameof(type)} is not null");
       return type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
                                         null,
                                         new Type[] { typeof(SerializationInfo), typeof(StreamingContext) },
@@ -196,6 +198,7 @@ namespace Slim.Core
     /// </summary>
     public static void WalkArrayRead<T>(Array arr, Func<T> each)
     {
+      Contract.Requires(!(arr is null), $"{nameof(arr)} is not null");
       var rank = arr.Rank;
 
       if (rank == 1)

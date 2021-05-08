@@ -52,7 +52,6 @@ namespace Slim
         throw new SlimException(StringConsts.ArgumentError + "SlimSerializer.ctor(format=null)");
 
       m_Format = format;
-      m_TypeMode = TypeRegistryMode.PerCall;
     }
 
     public SlimSerializer(SlimFormat format, params IEnumerable<Type>[] globalTypes) : this(format)
@@ -77,10 +76,6 @@ namespace Slim
 
     private SlimFormat m_Format;
     private IEnumerable<Type>[] m_GlobalTypes;
-    private TypeRegistryMode m_TypeMode;
-
-    private TypeRegistry m_BatchTypeRegistry;
-    private int m_BatchTypeRegistryPriorCount;
 
     private bool m_SkipTypeRegistryCrosschecks;
 
@@ -97,66 +92,12 @@ namespace Slim
 
     public SlimFormat Format => m_Format;
 
-    /// <summary>
-    /// Gets/sets how serializer handles type information between calls to Serialize/Deserialize.
-    /// Setting this to "Batch" makes this serializer instance not thread-safe for calling Serialize/Deserialize.
-    /// This property itself is not thread-safe, that is - it should be only set once by control/initiating thread
-    /// </summary>
-    public TypeRegistryMode TypeMode
-    {
-      get => m_TypeMode;
-      set
-      {
-        if (m_TypeMode == value) return;
-
-        if (value == TypeRegistryMode.Batch)
-        {
-          m_BatchTypeRegistry = new TypeRegistry(m_GlobalTypes);
-          m_BatchTypeRegistryPriorCount = m_BatchTypeRegistry.Count;
-        }
-        else
-          m_BatchTypeRegistry = null;
-
-        m_TypeMode = value;
-      }
-    }
-
-    /// <summary>
-    /// Returns true when TypeMode is "PerCall"
-    /// </summary>
-    public bool IsThreadSafe => m_TypeMode == TypeRegistryMode.PerCall;
-
-
-    /// <summary>
-    /// Returns true if last call to Serialize or Deserialize in batch mode added more types to type registry.
-    /// This call is only valid in TypeMode = "Batch" and is inherently not thread-safe
-    /// </summary>
-    public bool BatchTypesAdded => m_TypeMode == TypeRegistryMode.Batch && m_BatchTypeRegistryPriorCount != m_BatchTypeRegistry.Count;
-
-    /// <summary>
-    /// ADVANCED FEATURE! Developers do not use.
-    /// Returns type registry used in batch.
-    /// This call is only valid in TypeMode = "Batch" and is inherently not thread-safe.
-    /// Be careful not to mutate the returned object
-    /// </summary>
-    public TypeRegistry BatchTypeRegistry => m_BatchTypeRegistry;
 
     #endregion
 
 
     #region Public
-
-    /// <summary>
-    /// Resets type registry to initial state (which is based on global types) for TypeMode = "Batch",
-    /// otherwise does nothing. This method is not thread-safe
-    /// </summary>
-    public void ResetCallBatch()
-    {
-      if (m_TypeMode != TypeRegistryMode.Batch) return;
-      m_BatchTypeRegistry = new TypeRegistry(m_GlobalTypes);
-      m_BatchTypeRegistryPriorCount = m_BatchTypeRegistry.Count;
-    }
-
+    
     private int m_SerializeNestLevel;
     private SlimWriter m_CachedWriter;
 
@@ -166,21 +107,9 @@ namespace Slim
     {
       try
       {
-        var singleThreaded = m_TypeMode == TypeRegistryMode.Batch;
-
         SlimWriter writer;
 
-        if (!singleThreaded || m_SerializeNestLevel > 0)
           writer = m_Format.MakeWritingStreamer();
-        else
-        {
-          writer = m_CachedWriter;
-          if (writer == null)
-          {
-            writer = m_Format.MakeWritingStreamer();
-            m_CachedWriter = writer;
-          }
-        }
 
         var pool = ReservePool(SerializationOperation.Serializing);
         try
@@ -210,21 +139,7 @@ namespace Slim
     {
       try
       {
-        var singleThreaded = m_TypeMode == TypeRegistryMode.Batch;
-
-        SlimReader reader;
-
-        if (!singleThreaded || m_DeserializeNestLevel > 0)
-          reader = m_Format.MakeReadingStreamer();
-        else
-        {
-          reader = m_CachedReader;
-          if (reader == null)
-          {
-            reader = m_Format.MakeReadingStreamer();
-            m_CachedReader = reader;
-          }
-        }
+        var reader = m_Format.MakeReadingStreamer();
 
         var pool = ReservePool(SerializationOperation.Deserializing);
         try
@@ -296,14 +211,13 @@ namespace Slim
         root = new RootTypeBox { TypeValue = (Type)root };
 
       var scontext = new StreamingContext();
-      var registry = (m_TypeMode == TypeRegistryMode.PerCall) ? new TypeRegistry(m_GlobalTypes) : m_BatchTypeRegistry;
+      var registry = new TypeRegistry(m_GlobalTypes);
       var type = root != null ? root.GetType() : typeof(object);
       var isValType = type.IsValueType;
 
 
       WriteHeader(writer);
       var rcount = registry.Count;
-      m_BatchTypeRegistryPriorCount = rcount;
 
       if (!m_SkipTypeRegistryCrosschecks)
       {
@@ -344,11 +258,10 @@ namespace Slim
       object root = null;
 
       var scontext = new StreamingContext();
-      var registry = (m_TypeMode == TypeRegistryMode.PerCall) ? new TypeRegistry(m_GlobalTypes) : m_BatchTypeRegistry;
+      var registry = new TypeRegistry(m_GlobalTypes);
 
       {
         var rcount = registry.Count;
-        m_BatchTypeRegistryPriorCount = rcount;
 
         ReadHeader(reader);
         if (!m_SkipTypeRegistryCrosschecks)
@@ -418,7 +331,7 @@ namespace Slim
       for (int i = 0; i < odc.Count; i++)
       {
         var cb = odc[i];
-        cb.Descriptor.InvokeOnDeserializedCallbak(cb.Instance, scontext);
+        cb.Descriptor.InvokeOnDeserializedCallback(cb.Instance, scontext);
       }
 
       //before 20150214 this was BEFORE OnDeserializedCallbacks

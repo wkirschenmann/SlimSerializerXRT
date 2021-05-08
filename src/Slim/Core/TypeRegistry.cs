@@ -6,6 +6,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -15,7 +17,7 @@ namespace Slim.Core
   /// Provides a registry of types, types that do not need to be described in a serialization stream
   /// </summary>
   [Serializable]
-  public sealed class TypeRegistry : IEnumerable<Type>, ISerializable
+  internal sealed class TypeRegistry : IEnumerable<Type>
   {
     #region CONSTS
     /// <summary>
@@ -43,15 +45,15 @@ namespace Slim.Core
     }
 
     //20140701 DKh - speed optimization
-    private const int STR_HNDL_POOL_SIZE = 512;
-    internal static readonly string[] StrHndlPool;
+    private const int STR_HANDLE_POOL_SIZE = 512;
+    internal static readonly string[] StrHandlePool;
 
     static TypeRegistry()
     {
-      StrHndlPool = new string[STR_HNDL_POOL_SIZE];
-      StrHndlPool[0] = "$N";
-      for (var i = 1; i < STR_HNDL_POOL_SIZE; i++)
-        StrHndlPool[i] = '$' + i.ToString();
+      StrHandlePool = new string[STR_HANDLE_POOL_SIZE];
+      StrHandlePool[0] = "$N";
+      for (var i = 1; i < STR_HANDLE_POOL_SIZE; i++)
+        StrHandlePool[i] = '$' + i.ToString(CultureInfo.InvariantCulture);
     }
 
 
@@ -60,12 +62,7 @@ namespace Slim.Core
     #region .ctors
 
     private struct NullHandleFakeType { }
-
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("tps", m_List.Skip(4/*system type count see ctor*/).Select(t => t.AssemblyQualifiedName).ToArray());
-    }
+    
 
 
     /// <summary>
@@ -114,40 +111,34 @@ namespace Slim.Core
     /// <summary>
     /// Returns type by handle i.e. VarIntStr(1) or VarIntStr("full name"). Throws in case of error
     /// </summary>
-    public Type this[VarIntStr handle]
+    public Type GetOrAddType(VarIntStr handle)
     {
-      get
+      try
       {
-        try
+        if (IsNullHandle(handle)) return typeof(object);
+
+        if (handle.StringValue == null)
         {
-          if (IsNullHandle(handle)) return typeof(object);
-
-          if (handle.StringValue == null)
-          {
-            var idx = (int)handle.IntValue;
-            if (idx < m_List.Count)
-              return m_List[idx];
-            throw new Exception();
-          }
-
-          Type result;
-          if (!_sTypes.TryGetValue(handle.StringValue, out result))
-          {
-            result = Type.GetType(handle.StringValue, true);
-            var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal);
-            dict[handle.StringValue] = result;
-            System.Threading.Thread.MemoryBarrier();
-            _sTypes = dict;//atomic
-          }
-
-          bool added;
-          GetTypeIndex(result, out added);
-          return result;
+          var idx = (int) handle.IntValue;
+          if (idx < m_List.Count)
+            return m_List[idx];
+          throw new SlimException($"TypeRegistry : handle value \"{handle}\" is unknown.");
         }
-        catch
+
+        if (!_sTypes.TryGetValue(handle.StringValue, out var result))
         {
-          throw new SlimException("TypeRegistry[handle] is invalid: " + handle.ToString());
+          result = Type.GetType(handle.StringValue, true);
+          var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal) {[handle.StringValue] = result};
+          System.Threading.Thread.MemoryBarrier();
+          _sTypes = dict; //atomic
         }
+
+        GetTypeIndex(result, out var added);
+        return result;
+      }
+      catch(Exception e)
+      {
+        throw new SlimException("TypeRegistry[handle] is invalid: " + handle.ToString(),e);
       }
     }
 
@@ -231,18 +222,19 @@ namespace Slim.Core
     /// </summary>
     public VarIntStr GetTypeHandle(Type type, bool serializationForFrameWork)
     {
-      bool added;
-      var idx = GetTypeIndex(type, out added);
+      var idx = GetTypeIndex(type, out var added);
       if (!added)
         return new VarIntStr((uint)idx);
 
-      if (serializationForFrameWork)
-        return new VarIntStr(type.AssemblyQualifiedName.Replace(
-          "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-          "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-          ));
+      if (!serializationForFrameWork) return new VarIntStr(type.AssemblyQualifiedName);
 
-      return new VarIntStr(type.AssemblyQualifiedName);
+      Contract.Requires(!(type is null), $"{nameof(type)} is not null");
+      Contract.Requires(!(type.AssemblyQualifiedName is null), $"{nameof(type)}.{nameof(Type.AssemblyQualifiedName)} is not null");
+      return new VarIntStr(type.AssemblyQualifiedName.Replace(
+        "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+        "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+      ));
+
     }
 
 
@@ -283,8 +275,7 @@ namespace Slim.Core
     {
 
       added = false;
-      var idx = 0;
-      if (m_Types.TryGetValue(type, out idx)) return idx;
+      if (m_Types.TryGetValue(type, out var idx)) return idx;
 
       added = true;
       idx = Add(type);

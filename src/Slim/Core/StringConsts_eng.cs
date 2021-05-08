@@ -13,8 +13,6 @@ namespace Slim.Core
   internal static class StringConsts
   {
     internal const string ArgumentError = "Argument error: ";
-    internal const string BuildInfoReadError =
-            "Error reading BUILD_INFO resource: ";
     internal const string StreamCorruptedError = "Slim data stream is corrupted: ";
     internal const string StreamReadEofError =
         "Stream EOF before operation could complete: ";
@@ -37,9 +35,6 @@ namespace Slim.Core
 
     internal const string DeserializeCallbackError =
         "Exception leaked from OnDeserializationCallback() invoked by SlimSerializer. Error:  ";
-
-    internal const string IserializableMissingCtorError =
-        "ISerializable object does not implement .ctor(SerializationInfo, StreamingContext): ";
 
     internal const string BadHeaderError =
         "Bad SLIM format header";

@@ -33,8 +33,8 @@ namespace Slim.Core
 
 
       var th = typeHandle.StringValue ??
-              (typeHandle.IntValue < TypeRegistry.StrHndlPool.Length ?
-                        TypeRegistry.StrHndlPool[typeHandle.IntValue] :
+              (typeHandle.IntValue < TypeRegistry.StrHandlePool.Length ?
+                        TypeRegistry.StrHandlePool[typeHandle.IntValue] :
                         $"${typeHandle.IntValue}"
               );
 
