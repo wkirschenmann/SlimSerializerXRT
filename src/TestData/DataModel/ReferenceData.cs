@@ -8,53 +8,34 @@ namespace TestData.DataModel
 {
   public static class ReferenceData
   {
-    
-    public static MyDataSet DataSet1 = new MyDataSet()
+
+    public static readonly MyDataSet DataSet1 = InitData1();
+
+    private static MyDataSet InitData1()
     {
-      Name = "clientData",
-      Value = new Dictionary<MyKeyClass, MyValueClass>()
+      var output = new MyDataSet()
       {
-        {
-          new MyKeyClass(){Value="key1"}, new MyValueClass()
-          {
-            Values1=new Dictionary<string, double[]>()
-            {
-              {"key1Value1Key1", new double[]{1.0, 1.0, 1.0} },
-              {"key1Value1Key2", new double[]{1.0, 1.0, 2.0} },
-            }, 
-            Values2 = new Dictionary<string, DateTime>()
-            {
-              {"key1Value2Key1", new DateTime(2001, 2, 1)},
-              {"key1Value2Key2", new DateTime(2001, 2, 2) },
-            }, 
-            Values3 = new Dictionary<string, string>()
-            {
-              {"key1Value3Key1", "key1Value3Data1"},
-              {"key1Value3Key2", "key1Value3Data2" },
-            }
-          } 
-        },
-        {
-          new MyKeyClass(){Value="key2"}, new MyValueClass()
-          {
-            Values1=new Dictionary<string, double[]>()
-            {
-              {"key2Value1Key1", new double[]{2.0, 1.0, 1.0} },
-              {"key2Value1Key2", new double[]{2.0, 1.0, 2.0} },
-            }, 
-            Values2 = new Dictionary<string, DateTime>()
-            {
-              {"key2Value2Key1", new DateTime(2002, 2, 1)},
-              {"key2Value2Key2", new DateTime(2002, 2, 2) },
-            }, 
-            Values3 = new Dictionary<string, string>()
-            {
-              {"key2Value3Key1", "key2Value3Data1"},
-              {"key2Value3Key2", "key2Value3Data2" },
-            }
-          } 
-        }
-      }
-    };
-  }
+        Name = "clientData"
+      };
+
+      var mv1 = new MyValueClass();
+      mv1.Values1["key1Value1Key1"] = new double[] {1.0, 1.0, 1.0};
+      mv1.Values1["key1Value1Key2"] = new double[] {1.0, 1.0, 2.0};
+      mv1.Values2["key1Value2Key1"] = new DateTime(2001, 2, 1);
+      mv1.Values2["key1Value2Key2"] = new DateTime(2001, 2, 2);
+      mv1.Values3["key1Value3Key1"] = "key1Value3Data1";
+      mv1.Values3["key1Value3Key2"] = "key1Value3Data2";
+      output.Value[new MyKeyClass() {Value = "key1"}] = mv1;
+
+      var mv2 = new MyValueClass();
+      mv2.Values1["key2Value1Key1"] = new double[] {2.0, 1.0, 1.0};
+      mv2.Values1["key2Value1Key2"] = new double[] {2.0, 1.0, 2.0};
+      mv2.Values2["key2Value2Key1"] = new DateTime(2002, 2, 1);
+      mv2.Values2["key2Value2Key2"] = new DateTime(2002, 2, 2);
+      mv2.Values3["key2Value3Key1"] = "key2Value3Data1";
+      mv2.Values3["key2Value3Key2"] = "key2Value3Data2";
+      output.Value[new MyKeyClass() {Value = "key2"}] = mv2;
+      return output;
+    }
+  };
 }

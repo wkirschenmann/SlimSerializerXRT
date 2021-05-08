@@ -19,7 +19,7 @@ namespace Slim.Core
 
   internal class TypeSchema
   {
-    private ConcurrentDictionary<Type, TypeDescriptor> m_Dict2 = new ConcurrentDictionary<Type, TypeDescriptor>();
+    private readonly ConcurrentDictionary<Type, TypeDescriptor> m_Dict2 = new ConcurrentDictionary<Type, TypeDescriptor>();
     private TypeDescriptor GetTypeDescriptorCachedOrMake(Type tp) => m_Dict2.GetOrAdd(tp, t => new TypeDescriptor(this, t));
 
     public TypeSchema(SlimFormat format)
@@ -29,7 +29,8 @@ namespace Slim.Core
 
     public SlimFormat Format { get; }
 
-    public void Serialize(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork, Type type = null)
+    public void Serialize(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance,
+      StreamingContext streamingContext, bool serializationForFrameWork, Type type = null)
     {
       var typeHandle = new VarIntStr(0);
 
@@ -37,7 +38,7 @@ namespace Slim.Core
       {
         if (instance == null)
         {
-          writer.Write(TypeRegistry.NullHandle);//object type null
+          writer.Write(TypeRegistry.NullHandle); //object type null
           return;
         }
 
@@ -50,43 +51,48 @@ namespace Slim.Core
       }
 
       //we get here if we have a boxed value of directly-handled type
-      var wa = Format.GetWriteActionForType(type) ?? Format.GetWriteActionForRefType(type);//20150503 DKh fixed root byte[] slow
+      var wa = Format.GetWriteActionForType(type) ??
+               Format.GetWriteActionForRefType(type); //20150503 DKh fixed root byte[] slow
       if (wa != null)
       {
         wa(writer, instance);
         return;
       }
 
-      TypeDescriptor td = GetTypeDescriptorCachedOrMake(type);
+      var td = GetTypeDescriptorCachedOrMake(type);
 
       if (td.IsArray) //need to write array dimensions
       {
-        writer.Write(Arrays.ArrayToDescriptor((Array)instance, type, typeHandle));
+        writer.Write(Arrays.ArrayToDescriptor((Array) instance, type, typeHandle));
       }
-      
-//#if !NETFRAMEWORK
-      if (type.IsGenericType && 
-          type.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
-          type.GetGenericArguments()[0] == typeof(string))
-      {
-        var field = type.GetField("_comparer", BindingFlags.Instance | BindingFlags.NonPublic);
-        var comparer = field?.GetValue(instance);
-        if (comparer != null && comparer.GetType().Name == "NonRandomizedStringEqualityComparer")
-        {
-          var entries = type.GetField("_entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
-          var length = entries.GetType().GetProperty("Length").GetValue(entries);
-          var resize = type.GetMethod("Resize",
-                                               BindingFlags.Instance | BindingFlags.NonPublic,
-                                               null,
-                                               new[] {typeof(Int32), typeof(Boolean)},
-                                               new ParameterModifier[] { });
 
-          field.SetValue(instance, EqualityComparer<string>.Default);
-          resize.Invoke(instance, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {length, true},
-            CultureInfo.InvariantCulture);
+
+      {
+        #warning This code block is meant to compensate discrepancies between net451 and coreclr behavior. This code needs to be removed when removing net 451 support 
+        if (type.IsGenericType &&
+            type.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
+            type.GetGenericArguments()[0] == typeof(string))
+        {
+          var field = type.GetField("_comparer", BindingFlags.Instance | BindingFlags.NonPublic);
+          var comparer = field?.GetValue(instance);
+          if (comparer != null && comparer.GetType().Name == "NonRandomizedStringEqualityComparer")
+          {
+            field.SetValue(instance, EqualityComparer<string>.Default);
+            var entries = type.GetField("_entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(instance);
+            if (entries != null)
+            {
+              var length = entries.GetType().GetProperty("Length").GetValue(entries);
+              var resize = type.GetMethod("Resize",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] {typeof(int), typeof(bool)},
+                new ParameterModifier[] { });
+              resize.Invoke(instance, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {length, true},
+                CultureInfo.InvariantCulture);
+            }
+          }
         }
       }
-//#endif // !NETFRAMEWORK
 
       td.SerializeInstance(writer, registry, refs, instance, streamingContext, serializationForFrameWork);
     }
@@ -95,7 +101,7 @@ namespace Slim.Core
     public void WriteRefMetaHandle(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork)
     {
 
-      var mh = refs.GetHandle(instance, registry, Format, out Type tInstance, serializationForFrameWork);
+      var mh = refs.GetHandle(instance, registry, Format, out var tInstance, serializationForFrameWork);
       writer.Write(mh);
 
       if (mh.IsInlinedValueType)
@@ -142,7 +148,7 @@ namespace Slim.Core
 
     public object DeserializeRootOrInner(SlimReader reader, TypeRegistry registry, RefPool refs, StreamingContext streamingContext, bool root, Type valueType = null)
     {
-      Type type = valueType;
+      var type = valueType;
       if (type == null)
       {
         var thandle = reader.ReadVarIntStr();
@@ -174,7 +180,7 @@ namespace Slim.Core
         return ra(reader);
 
 
-      TypeDescriptor td = GetTypeDescriptorCachedOrMake(type);
+      var td = GetTypeDescriptorCachedOrMake(type);
 
       object instance;
       if (td.IsArray)
@@ -204,7 +210,7 @@ namespace Slim.Core
       reader.ReadVarIntStr();//skip type as we already know it from prior-allocated metahandle
 
 
-      TypeDescriptor td = GetTypeDescriptorCachedOrMake(type);
+      var td = GetTypeDescriptorCachedOrMake(type);
 
       if (type.IsArray)
         reader.ReadString();//skip array descriptor as we already know it from prior-allocated metahandle

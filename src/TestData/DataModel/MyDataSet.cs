@@ -8,7 +8,7 @@ namespace TestData.DataModel
   [Serializable]
   public class MyDataSet : IEquatable<MyDataSet>
   {
-    public Dictionary<MyKeyClass, MyValueClass> Value { get; set; }
+    public Dictionary<MyKeyClass, MyValueClass> Value { get; } = new Dictionary<MyKeyClass, MyValueClass>();
 
     public string Name { get; set; }
     public override string ToString()
@@ -22,10 +22,9 @@ namespace TestData.DataModel
       if (ReferenceEquals(this, other)) return true;
       return Name == other.Name && 
              Value.Count == other.Value.Count && 
-             Value.Zip(other.Value, (_1, _2)=>
-               {
-                 return _1.Key.Equals(_2.Key) && _1.Value.Equals(_2.Value);
-               })
+             Value.OrderByDescending(_=>_.Key.Value)
+                  .Zip(other.Value.OrderByDescending(_=>_.Key.Value), 
+                       (_1, _2)=> _1.Key.Equals(_2.Key) && _1.Value.Equals(_2.Value))
                   .All(_=>_);
     }
 

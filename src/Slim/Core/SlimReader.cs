@@ -11,14 +11,8 @@ namespace Slim.Core
   /// <summary>
   /// Reads primitives and other supported types from Slim-format stream. Use factory method of SlimFormat instance to create a new instance of SlimReader class
   /// </summary>
-  public class SlimReader : ReadingStreamer
+  internal class SlimReader : ReadingStreamer
   {
-    protected internal SlimReader() : base(null) { }
-
-    /// <summary>
-    /// Returns SlimFormat that this reader implements
-    /// </summary>
-    public override StreamerFormat Format => SlimFormat.Instance;
 
     public override bool ReadBool()
     {
@@ -77,7 +71,7 @@ namespace Slim.Core
       var result = new int[len];
 
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadInt();
 
       return result;
@@ -96,7 +90,7 @@ namespace Slim.Core
       var result = new long[len];
 
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadLong();
 
       return result;
@@ -115,7 +109,7 @@ namespace Slim.Core
       var result = new double[len];
 
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadDouble();
 
       return result;
@@ -134,7 +128,7 @@ namespace Slim.Core
       var result = new float[len];
 
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadFloat();
 
       return result;
@@ -152,7 +146,7 @@ namespace Slim.Core
       var result = new decimal[len];
 
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadDecimal();
 
       return result;
@@ -176,7 +170,7 @@ namespace Slim.Core
 
     public override char[] ReadCharArray()
     {
-      byte[] buf = this.ReadByteArray();
+      var buf = this.ReadByteArray();
       if (buf == null) return null;
 
       return Encoding.GetChars(buf);
@@ -195,7 +189,7 @@ namespace Slim.Core
 
       var result = new string[len];
 
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         result[i] = this.ReadString();
 
       return result;
@@ -224,21 +218,21 @@ namespace Slim.Core
     }
 
 
-    public unsafe override double ReadDouble()
+    public override unsafe double ReadDouble()
     {
-      ReadFromStream(Buff32, 8);
+      ReadFromStream(GetBuff32(), 8);
 
-      uint seg1 = (uint)((int)Buff32[0] |
-                          (int)Buff32[1] << 8 |
-                          (int)Buff32[2] << 16 |
-                          (int)Buff32[3] << 24);
+      var seg1 = (uint)((int)GetBuff32()[0] |
+                        (int)GetBuff32()[1] << 8 |
+                        (int)GetBuff32()[2] << 16 |
+                        (int)GetBuff32()[3] << 24);
 
-      uint seg2 = (uint)((int)Buff32[4] |
-                          (int)Buff32[5] << 8 |
-                          (int)Buff32[6] << 16 |
-                          (int)Buff32[7] << 24);
+      var seg2 = (uint)((int)GetBuff32()[4] |
+                        (int)GetBuff32()[5] << 8 |
+                        (int)GetBuff32()[6] << 16 |
+                        (int)GetBuff32()[7] << 24);
 
-      ulong core = (ulong)seg2 << 32 | (ulong)seg1;
+      var core = (ulong)seg2 << 32 | (ulong)seg1;
 
       return *(double*)(&core);
     }
@@ -253,14 +247,14 @@ namespace Slim.Core
     }
 
 
-    public unsafe override float ReadFloat()
+    public override unsafe float ReadFloat()
     {
-      ReadFromStream(Buff32, 4);
+      ReadFromStream(GetBuff32(), 4);
 
-      uint core = (uint)((int)Buff32[0] |
-                          (int)Buff32[1] << 8 |
-                          (int)Buff32[2] << 16 |
-                          (int)Buff32[3] << 24);
+      var core = (uint)((int)GetBuff32()[0] |
+                        (int)GetBuff32()[1] << 8 |
+                        (int)GetBuff32()[2] << 16 |
+                        (int)GetBuff32()[3] << 24);
       return *(float*)(&core);
     }
 
@@ -276,7 +270,7 @@ namespace Slim.Core
 
     public override int ReadInt()
     {
-      int result = 0;
+      var result = 0;
       var b = Stream.ReadByte();
       if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt(): eof");
 

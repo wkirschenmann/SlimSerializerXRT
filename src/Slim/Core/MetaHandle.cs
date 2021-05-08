@@ -5,6 +5,7 @@
 </FILE_LICENSE>*/
 
 using System;
+using System.Globalization;
 
 
 namespace Slim.Core
@@ -17,7 +18,7 @@ namespace Slim.Core
   /// Check "IsInlinedValueType" is set to true when a struct/valuetype is inlined and "Metadata" contains type spec
   /// </summary>
   [Serializable]
-  public struct MetaHandle : IEquatable<MetaHandle>
+  internal struct MetaHandle : IEquatable<MetaHandle>
   {
     internal const int InlinedStringHandle = 0;
     internal const int InlinedValuetypeHandle = 1;
@@ -26,63 +27,58 @@ namespace Slim.Core
     internal const int HandleOffset = 4;
 
 
-    internal int m_Handle;
+    internal int HandleRawValue { get;  }
     private VarIntStr? m_Metadata;
 
 
     /// <summary>
     /// Returns handle value. This value is invalid if special conditions such as inlining are true
     /// </summary>
-    public int Handle { get { unchecked { return m_Handle - HandleOffset; } } }
+    public int Handle =>  HandleRawValue - HandleOffset; 
 
     /// <summary>
     /// Indicates whether a string instance is inlined in Metadata property
     /// </summary>
-    public bool IsInlinedString => m_Handle == InlinedStringHandle;
+    public bool IsInlinedString => HandleRawValue == InlinedStringHandle;
 
     /// <summary>
     /// Indicates whether a struct (value type) instance is inlined right after this handle and Metadata property contains type
     /// </summary>
-    public bool IsInlinedValueType => m_Handle == InlinedValuetypeHandle;
+    public bool IsInlinedValueType => HandleRawValue == InlinedValuetypeHandle;
 
     /// <summary>
     /// Indicates whether a reference (reference type) instance is inlined right after this handle and Metadata property contains type.
     /// This is used for handling of ref types that are natively supported by streamers
     /// </summary>
-    public bool IsInlinedRefType => m_Handle == InlinedReftypeHandle;
+    public bool IsInlinedRefType => HandleRawValue == InlinedReftypeHandle;
 
     /// <summary>
     /// Indicates whether a reference to TYPE is inlined - that is a Metadata parameter points to the value of type (reference to Type)
     /// </summary>
-    public bool IsInlinedTypeValue => m_Handle == InlinedTypevalHandle;
+    public bool IsInlinedTypeValue => HandleRawValue == InlinedTypevalHandle;
 
 
     public VarIntStr? Metadata => m_Metadata;
-    public uint IntMetadata => m_Metadata.HasValue ? m_Metadata.Value.IntValue : 0;
-    public string StringMetadata => m_Metadata.HasValue ? m_Metadata.Value.StringValue : null;
 
 
-    public MetaHandle(int handle)
-    {
-      m_Handle = handle + HandleOffset;
-      m_Metadata = null;
-    }
+    public MetaHandle(int handle, bool raw = false):this(handle, null, raw)
+    { }
 
     public MetaHandle(bool serializer, int handle)
     {
-      m_Handle = handle + (serializer ? 0 : HandleOffset);
+      HandleRawValue = handle + (serializer ? 0 : HandleOffset);
       m_Metadata = null;
     }
 
-    public MetaHandle(int handle, VarIntStr? metadata)
+    public MetaHandle(int handle, VarIntStr? metadata, bool raw = false)
     {
-      m_Handle = handle + HandleOffset;
+      HandleRawValue = handle + (raw ? 0 : HandleOffset);
       m_Metadata = metadata;
     }
 
     internal MetaHandle(bool serializer, int handle, VarIntStr? metadata)
     {
-      m_Handle = handle + (serializer ? 0 : HandleOffset);
+      HandleRawValue = handle + (serializer ? 0 : HandleOffset);
       m_Metadata = metadata;
     }
 
@@ -91,9 +87,8 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineString(string inlinedString)
     {
-      var result = new MetaHandle
+      var result = new MetaHandle(InlinedStringHandle, true)
       {
-        m_Handle = InlinedStringHandle,
         m_Metadata = new VarIntStr(inlinedString)
       };
       return result;
@@ -105,9 +100,8 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineValueType(VarIntStr? inlinedValueType)
     {
-      var result = new MetaHandle
+      var result = new MetaHandle(InlinedReftypeHandle, true)
       {
-        m_Handle = InlinedValuetypeHandle,
         m_Metadata = inlinedValueType
       };
       return result;
@@ -118,9 +112,8 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineRefType(VarIntStr? inlinedRefType)
     {
-      var result = new MetaHandle
+      var result = new MetaHandle(InlinedReftypeHandle, true)
       {
-        m_Handle = InlinedReftypeHandle,
         m_Metadata = inlinedRefType
       };
       return result;
@@ -131,9 +124,8 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineTypeValue(VarIntStr? inlinedTypeValue)
     {
-      var result = new MetaHandle
+      var result = new MetaHandle(InlinedReftypeHandle, true)
       {
-        m_Handle = InlinedTypevalHandle,
         m_Metadata = inlinedTypeValue
       };
       return result;
@@ -142,12 +134,12 @@ namespace Slim.Core
     public override string ToString()
     {
       return
-        $"[{(IsInlinedString ? "string" : IsInlinedValueType ? "struct" : IsInlinedRefType ? "refobj" : Handle.ToString())}] {Metadata}";
+        $"[{(IsInlinedString ? "string" : IsInlinedValueType ? "struct" : IsInlinedRefType ? "refobj" : Handle.ToString(CultureInfo.InvariantCulture))}] {Metadata}";
     }
 
     public override int GetHashCode()
     {
-      return m_Handle.GetHashCode();
+      return HandleRawValue.GetHashCode();
     }
 
     public override bool Equals(object obj)
@@ -162,7 +154,7 @@ namespace Slim.Core
       var h1 = m_Metadata.HasValue;
       var h2 = other.m_Metadata.HasValue;
 
-      return m_Handle == other.m_Handle &&
+      return HandleRawValue == other.HandleRawValue &&
             ((!h1 && !h2) || (h1 && h2 && m_Metadata.Value.Equals(other.m_Metadata.Value)));
     }
 

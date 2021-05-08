@@ -1,6 +1,6 @@
 ﻿namespace TestData.SerializedData
 {
-  public class ReferenceData
+  public static class ReferenceData
   {
     public static readonly byte[] FromFrameworkData = new byte[]
       {

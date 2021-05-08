@@ -42,9 +42,9 @@ namespace TestData.DataModel
   [Serializable]
   public class MyValueClass : IEquatable<MyValueClass>
   {
-    public Dictionary<string, double[]> Values1 { get; set; } = new Dictionary<string, double[]>(StringComparer.Ordinal);
-    public Dictionary<string, DateTime> Values2 { get; set; } = new Dictionary<string, DateTime>(StringComparer.Ordinal);
-    public Dictionary<string, string> Values3 { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public Dictionary<string, double[]> Values1 { get; } = new Dictionary<string, double[]>();
+    public Dictionary<string, DateTime> Values2 { get; } = new Dictionary<string, DateTime>();
+    public Dictionary<string, string> Values3 { get; } = new Dictionary<string, string>();
 
     public override string ToString()
     {

@@ -12,14 +12,8 @@ namespace Slim.Core
   /// <summary>
   /// Reads primitives from stream
   /// </summary>
-  public abstract class ReadingStreamer : Streamer
+  internal abstract class ReadingStreamer : Streamer
   {
-    #region .ctor
-    protected ReadingStreamer(Encoding encoding = null) : base(encoding)
-    {
-    }
-
-    #endregion
 
     #region Protected
 

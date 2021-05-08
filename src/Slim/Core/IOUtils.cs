@@ -15,13 +15,13 @@ namespace Slim.Core
   /// <summary>
   /// Provides IO-related utility extensions
   /// </summary>
-  public static class IoUtils
+  internal static class IoUtils
   {
 
     /// <summary>
     /// Reads an integer encoded as big endian from buffer at the specified index
     /// </summary>
-    public static ulong ReadBeuInt64(this Stream s)
+    internal static ulong ReadBeuInt64(this Stream s)
     {
       ulong res = 0;
       for (var i = 0; i < 8; ++i)

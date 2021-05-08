@@ -11,17 +11,9 @@ namespace Slim.Core
   /// <summary>
   /// Writes primitives and other supported types to Slim-format stream. Use factory method of SlimFormat instance to create a new instance of SlimWriter class
   /// </summary>
-  public class SlimWriter : WritingStreamer
+  internal class SlimWriter : WritingStreamer
   {
-    protected internal SlimWriter() : base(null) { }
-
-
-    /// <summary>
-    /// Returns SlimFormat that this writer implements
-    /// </summary>
-    public override StreamerFormat Format => SlimFormat.Instance;
-
-
+    
     public override void Flush()
     {
       Stream.Flush();
@@ -86,7 +78,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "ints", SlimFormat.MaxIntArrayLen));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(value[i]); //WITH compression
     }
 
@@ -104,7 +96,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "longs", SlimFormat.MaxLongArrayLen));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(value[i]); //WITH compression
     }
 
@@ -122,7 +114,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "doubles", SlimFormat.MaxDoubleArrayLen));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(value[i]);
     }
 
@@ -139,7 +131,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "floats", SlimFormat.MaxFloatArrayLen));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(value[i]);
     }
 
@@ -156,7 +148,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "decimals", SlimFormat.MaxDecimalArrayLen));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(value[i]);
     }
 
@@ -205,7 +197,7 @@ namespace Slim.Core
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "strings", SlimFormat.MaxStringArrayCnt));
 
       this.Write(len);
-      for (int i = 0; i < len; i++)
+      for (var i = 0; i < len; i++)
         this.Write(array[i]);
     }
 
@@ -216,8 +208,8 @@ namespace Slim.Core
       this.Write(bits[1]);
       this.Write(bits[2]);
 
-      byte sign = (bits[3] & 0x80000000) != 0 ? (byte)0x80 : (byte)0x00;
-      byte scale = (byte)((bits[3] >> 16) & 0x7F);
+      var sign = (bits[3] & 0x80000000) != 0 ? (byte)0x80 : (byte)0x00;
+      var scale = (byte)((bits[3] >> 16) & 0x7F);
 
       this.Write((byte)(sign | scale));
     }
@@ -234,20 +226,20 @@ namespace Slim.Core
     }
 
 
-    public unsafe override void Write(double value)
+    public override unsafe void Write(double value)
     {
-      ulong core = *(ulong*)(&value);
+      var core = *(ulong*)(&value);
 
-      Buff32[0] = (byte)core;
-      Buff32[1] = (byte)(core >> 8);
-      Buff32[2] = (byte)(core >> 16);
-      Buff32[3] = (byte)(core >> 24);
-      Buff32[4] = (byte)(core >> 32);
-      Buff32[5] = (byte)(core >> 40);
-      Buff32[6] = (byte)(core >> 48);
-      Buff32[7] = (byte)(core >> 56);
+      GetBuff32()[0] = (byte)core;
+      GetBuff32()[1] = (byte)(core >> 8);
+      GetBuff32()[2] = (byte)(core >> 16);
+      GetBuff32()[3] = (byte)(core >> 24);
+      GetBuff32()[4] = (byte)(core >> 32);
+      GetBuff32()[5] = (byte)(core >> 40);
+      GetBuff32()[6] = (byte)(core >> 48);
+      GetBuff32()[7] = (byte)(core >> 56);
 
-      Stream.Write(Buff32, 0, 8);
+      Stream.Write(GetBuff32(), 0, 8);
     }
 
     public override void Write(double? value)
@@ -262,14 +254,14 @@ namespace Slim.Core
     }
 
 
-    public unsafe override void Write(float value)
+    public override unsafe void Write(float value)
     {
-      uint core = *(uint*)(&value);
-      Buff32[0] = (byte)core;
-      Buff32[1] = (byte)(core >> 8);
-      Buff32[2] = (byte)(core >> 16);
-      Buff32[3] = (byte)(core >> 24);
-      Stream.Write(Buff32, 0, 4);
+      var core = *(uint*)(&value);
+      GetBuff32()[0] = (byte)core;
+      GetBuff32()[1] = (byte)(core >> 8);
+      GetBuff32()[2] = (byte)(core >> 16);
+      GetBuff32()[3] = (byte)(core >> 24);
+      Stream.Write(GetBuff32(), 0, 4);
     }
 
     public override void Write(float? value)
@@ -295,7 +287,7 @@ namespace Slim.Core
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
-      value = value >> 6;
+      value >>= 6;
       var has = value != 0;
       if (has)
         b = (byte)(b | 0x80);
@@ -303,7 +295,7 @@ namespace Slim.Core
       while (has)
       {
         b = (byte)(value & 0x7f);
-        value = value >> 7;
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
@@ -333,7 +325,7 @@ namespace Slim.Core
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
-      value = value >> 6;
+      value >>= 6;
       var has = value != 0;
       if (has)
         b = (byte)(b | 0x80);
@@ -341,7 +333,7 @@ namespace Slim.Core
       while (has)
       {
         b = (byte)(value & 0x7f);
-        value = value >> 7;
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
@@ -449,8 +441,8 @@ namespace Slim.Core
       var has = true;
       while (has)
       {
-        byte b = (byte)(value & 0x7f);
-        value = value >> 7;
+        var b = (byte)(value & 0x7f);
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
@@ -474,8 +466,8 @@ namespace Slim.Core
       var has = true;
       while (has)
       {
-        byte b = (byte)(value & 0x7f);
-        value = value >> 7;
+        var b = (byte)(value & 0x7f);
+        value >>= 7;
         has = value != 0;
         if (has)
           b = (byte)(b | 0x80);
@@ -500,7 +492,7 @@ namespace Slim.Core
       var has = true;
       while (has)
       {
-        byte b = (byte)(value & 0x7f);
+        var b = (byte)(value & 0x7f);
         value = (ushort)(value >> 7);
         has = value != 0;
         if (has)
@@ -526,14 +518,14 @@ namespace Slim.Core
     {
       var meta = value.Metadata.HasValue;
 
-      var handle = value.m_Handle;
+      var handle = value.HandleRawValue;
 
       byte b = 0;
 
       if (meta) b = 1;
 
       b = (byte)(b | ((handle & 0x3f) << 1));
-      handle = (handle >> 6);
+      handle >>= 6;
       var has = handle != 0;
       if (has)
         b = (byte)(b | 0x80);
@@ -541,7 +533,7 @@ namespace Slim.Core
       while (has)
       {
         b = (byte)(handle & 0x7f);
-        handle = (handle >> 7);
+        handle >>= 7;
         has = handle != 0;
         if (has)
           b = (byte)(b | 0x80);
