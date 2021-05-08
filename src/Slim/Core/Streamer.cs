@@ -17,34 +17,25 @@ namespace Slim.Core
   {
     public static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(false, false);
 
-    protected Streamer(Encoding encoding = null)
+    protected Streamer()
     {
-      Encoding = encoding ?? Utf8Encoding;
+      Encoding = Utf8Encoding;
 
-      Buff32 = SlimFormat.TsBuff32;
-      if (Buff32 == null)
+      if (SlimFormat.TsBuff32 is null)
       {
-        var buf = new byte[32];
-        Buff32 = buf;
-        SlimFormat.TsBuff32 = buf;
+        SlimFormat.TsBuff32 = new byte[32];
       }
-
     }
 
-    protected byte[] Buff32 { get; private set; }
+#pragma warning disable CA1822 // Mark members as static
+    protected byte[] GetBuff32() // buffer lifecycle is handled by the constructor
+#pragma warning restore CA1822 // Mark members as static
+    {
+      return SlimFormat.TsBuff32;
+    }
 
     protected Stream Stream { get; private set; }
     protected Encoding Encoding { get; private set; }
-
-
-
-    /// <summary>
-    /// Returns format that this streamer implements
-    /// </summary>
-    public abstract StreamerFormat Format
-    {
-      get;
-    }
 
 
 

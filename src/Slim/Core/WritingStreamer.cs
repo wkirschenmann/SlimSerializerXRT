@@ -5,22 +5,14 @@
 </FILE_LICENSE>*/
 
 using System;
-using System.Text;
 
 namespace Slim.Core
 {
   /// <summary>
   /// Writes primitives to stream
   /// </summary>
-  public abstract class WritingStreamer : Streamer
+  internal abstract class WritingStreamer : Streamer
   {
-    #region .ctor
-    protected WritingStreamer(Encoding encoding = null) : base(encoding)
-    {
-    }
-    #endregion
-
-
     #region Public
     public abstract void Flush();
 

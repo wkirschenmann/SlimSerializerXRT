@@ -44,8 +44,7 @@ namespace Slim.Core
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static object MakeNewObjectInstance(Type type)
     {
-      Func<object> f;
-      if (!_sCreateFuncCache.TryGetValue(type, out f))
+      if (!_sCreateFuncCache.TryGetValue(type, out var f))
       {
         var ctorEmpty = type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
                                         null,
@@ -53,9 +52,7 @@ namespace Slim.Core
                                         null);
 
         //20150717 DKh added SlimDeserializationCtorSkipAttribute
-        var skipAttr = ctorEmpty != null ?
-                        ctorEmpty.GetCustomAttributes<SlimDeserializationCtorSkipAttribute>(false).FirstOrDefault()
-                        : null;
+        var skipAttr = ctorEmpty?.GetCustomAttributes<SlimDeserializationCtorSkipAttribute>(false).FirstOrDefault();
 
 
         //20150715 DKh look for ISerializable .ctor
@@ -67,8 +64,10 @@ namespace Slim.Core
         else
           f = () => FormatterServices.GetUninitializedObject(type);
 
-        var cache = new Dictionary<Type, Func<object>>(_sCreateFuncCache);
-        cache[type] = f;
+        var cache = new Dictionary<Type, Func<object>>(_sCreateFuncCache)
+        {
+          [type] = f
+        };
         Thread.MemoryBarrier();
         _sCreateFuncCache = cache;
       }
@@ -105,12 +104,13 @@ namespace Slim.Core
     /// </summary>
     public static IEnumerable<FieldInfo> GetSerializableFields(Type type)
     {
-      FieldInfo[] result;
-      if (!_sFieldCache.TryGetValue(type, out result))
+      if (!_sFieldCache.TryGetValue(type, out var result))
       {
         result = GetGetSerializableFields(type);
-        var dict = new Dictionary<Type, FieldInfo[]>(_sFieldCache);
-        dict[type] = result;
+        var dict = new Dictionary<Type, FieldInfo[]>(_sFieldCache)
+        {
+          [type] = result
+        };
         Thread.MemoryBarrier();
         _sFieldCache = dict;
       }

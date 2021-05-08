@@ -17,7 +17,7 @@ namespace Slim.Core
   /// <summary>
   /// Describes a format - a pair of readers/writers along with their capabilities - what types format supports natively
   /// </summary>
-  public abstract class StreamerFormat
+  internal abstract class StreamerFormat
   {
     public abstract Type ReaderType { get; }
     public abstract Type WriterType { get; }
@@ -72,7 +72,7 @@ namespace Slim.Core
   /// Describes a format - a pair of readers/writers along with their capabilities.
   /// Developers may derive new formats that support custom serialization schemes
   /// </summary>
-  public abstract class StreamerFormat<TReader, TWriter> : StreamerFormat where TReader : ReadingStreamer
+  internal abstract class StreamerFormat<TReader, TWriter> : StreamerFormat where TReader : ReadingStreamer
                                                                           where TWriter : WritingStreamer
   {
 
@@ -105,7 +105,7 @@ namespace Slim.Core
       t = this.ReaderType;//typeof(TReader);
 
       var rMethods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                      .Where(mi => mi.Name.StartsWith("Read") && mi.ReturnType != typeof(void) && !mi.IsConstructor);//do not localize
+                      .Where(mi => mi.Name.StartsWith("Read", StringComparison.InvariantCulture) && mi.ReturnType != typeof(void) && !mi.IsConstructor);//do not localize
 
       foreach (var mi in rMethods)
       {
@@ -121,15 +121,15 @@ namespace Slim.Core
     }
 
 
-    private Dictionary<Type, MethodInfo> m_ReadMethods;
-    private Dictionary<Type, MethodInfo> m_WriteMethods;
+    private readonly Dictionary<Type, MethodInfo> m_ReadMethods;
+    private readonly Dictionary<Type, MethodInfo> m_WriteMethods;
 
     private Dictionary<Type, Func<TReader, object>> m_ReadActions;
     private Dictionary<Type, Action<TWriter, object>> m_WriteActions;
 
 
-    private Dictionary<Type, MethodInfo> m_ReadMethodsRefT;
-    private Dictionary<Type, MethodInfo> m_WriteMethodsRefT;
+    private readonly Dictionary<Type, MethodInfo> m_ReadMethodsRefT;
+    private readonly Dictionary<Type, MethodInfo> m_WriteMethodsRefT;
 
     private Dictionary<Type, Func<TReader, object>> m_ReadActionsRefT;
     private Dictionary<Type, Action<TWriter, object>> m_WriteActionsRefT;
@@ -189,8 +189,7 @@ namespace Slim.Core
     /// </summary>
     public sealed override MethodInfo GetReadMethodForType(Type t)
     {
-      MethodInfo result = null;
-      if (m_ReadMethods.TryGetValue(t, out result)) return result;
+      if (m_ReadMethods.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -201,8 +200,7 @@ namespace Slim.Core
     /// </summary>
     public sealed override MethodInfo GetReadMethodForRefType(Type t)
     {
-      MethodInfo result = null;
-      if (m_ReadMethodsRefT.TryGetValue(t, out result)) return result;
+      if (m_ReadMethodsRefT.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -213,8 +211,7 @@ namespace Slim.Core
     /// </summary>
     public sealed override MethodInfo GetWriteMethodForType(Type t)
     {
-      MethodInfo result = null;
-      if (m_WriteMethods.TryGetValue(t, out result)) return result;
+      if (m_WriteMethods.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -224,8 +221,7 @@ namespace Slim.Core
     /// </summary>
     public sealed override MethodInfo GetWriteMethodForRefType(Type t)
     {
-      MethodInfo result = null;
-      if (m_WriteMethodsRefT.TryGetValue(t, out result)) return result;
+      if (m_WriteMethodsRefT.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -235,8 +231,7 @@ namespace Slim.Core
     /// </summary>
     public Func<TReader, object> GetReadActionForType(Type t)
     {
-      Func<TReader, object> result = null;
-      if (m_ReadActions.TryGetValue(t, out result)) return result;
+      if (m_ReadActions.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -245,8 +240,7 @@ namespace Slim.Core
     /// </summary>
     public Func<TReader, object> GetReadActionForRefType(Type t)
     {
-      Func<TReader, object> result = null;
-      if (m_ReadActionsRefT.TryGetValue(t, out result)) return result;
+      if (m_ReadActionsRefT.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -255,8 +249,7 @@ namespace Slim.Core
     /// </summary>
     public Action<TWriter, object> GetWriteActionForType(Type t)
     {
-      Action<TWriter, object> result = null;
-      if (m_WriteActions.TryGetValue(t, out result)) return result;
+      if (m_WriteActions.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -265,8 +258,7 @@ namespace Slim.Core
     /// </summary>
     public Action<TWriter, object> GetWriteActionForRefType(Type t)
     {
-      Action<TWriter, object> result = null;
-      if (m_WriteActionsRefT.TryGetValue(t, out result)) return result;
+      if (m_WriteActionsRefT.TryGetValue(t, out var result)) return result;
       return null;
     }
 
@@ -283,14 +275,14 @@ namespace Slim.Core
       {
         var returnType = rkvp.Key;
         var mi = rkvp.Value;
-        m_ReadActions.Add(returnType, CompileReader(returnType, mi));
+        m_ReadActions.Add(returnType, CompileReader(mi));
       }
 
       foreach (var rkvp in m_ReadMethodsRefT)
       {
         var returnType = rkvp.Key;
         var mi = rkvp.Value;
-        m_ReadActionsRefT.Add(returnType, CompileReader(returnType, mi));
+        m_ReadActionsRefT.Add(returnType, CompileReader(mi));
       }
 
       foreach (var wkvp in m_WriteMethods)
@@ -309,7 +301,7 @@ namespace Slim.Core
     }
 
 
-    private Func<TReader, object> CompileReader(Type tp, MethodInfo miRead)
+    private static Func<TReader, object> CompileReader(MethodInfo miRead)
     {
       var pReadingStreamer = Expression.Parameter(typeof(TReader));
       return Expression.Lambda<Func<TReader, object>>(
@@ -317,7 +309,7 @@ namespace Slim.Core
                       pReadingStreamer).Compile();
     }
 
-    private Action<TWriter, object> CompileWriter(Type tp, MethodInfo miWrite)
+    private static Action<TWriter, object> CompileWriter(Type tp, MethodInfo miWrite)
     {
       var pWritingStreamer = Expression.Parameter(typeof(TWriter));
       var pValue = Expression.Parameter(typeof(object));

@@ -6,7 +6,6 @@
 
 using System.IO;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Slim.Core
 {

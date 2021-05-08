@@ -47,7 +47,7 @@ namespace Slim.Core
       descr.Append(th);
       descr.Append('|');//separator char
 
-      for (int i = 0; i < ar; i++)
+      for (var i = 0; i < ar; i++)
       {
         descr.Append(array.GetLowerBound(i));
         descr.Append('~');
@@ -66,7 +66,7 @@ namespace Slim.Core
 
       if (i < 2)
       {
-        throw new SlimException(StringConsts.ArraysMissingArrayDimsError + descr.ToString());
+        throw new SlimException(StringConsts.ArraysMissingArrayDimsError + descr);
       }
 
       if (i == 2 && descr[1] == '2' && descr[0] == '$')//object[] case: $2|len
@@ -79,15 +79,15 @@ namespace Slim.Core
         return new object[total];
       }
 
-
-
-      Array instance = null;
-
       if (!type.IsArray)
         throw new SlimException(StringConsts.ArraysTypeNotArrayError + type.FullName);
 
       i++;//over |
       var len = descr.Length;
+
+
+
+      Array instance;
       //descr = $0|0~12,1~100
       //           ^
 
@@ -99,11 +99,11 @@ namespace Slim.Core
         if (dimCount > MaxDimCount)
           throw new SlimException(StringConsts.ArraysOverMaxDimsError.Args(dimCount, MaxDimCount));
 
-        int[] lengths = new int[dimCount];
-        int[] lowerBounds = new int[dimCount];
+        var lengths = new int[dimCount];
+        var lowerBounds = new int[dimCount];
 
         long total = 0;
-        for (int dim = 0; dim < dimCount; dim++)
+        for (var dim = 0; dim < dimCount; dim++)
         {
           var lb = QuickParseInt(descr, ref i, len);
           var ub = QuickParseInt(descr, ref i, len);
@@ -121,7 +121,7 @@ namespace Slim.Core
       }
       catch (Exception error)
       {
-        throw new SlimException(StringConsts.ArraysArrayInstanceError + descr.ToString() + "': " + error.Message, error);
+        throw new SlimException(StringConsts.ArraysArrayInstanceError + descr + "': " + error.Message, error);
       }
 
       return instance;
@@ -129,8 +129,8 @@ namespace Slim.Core
 
     private static int QuickParseInt(string str, ref int i, int len)
     {
-      int result = 0;
-      bool pos = true;
+      var result = 0;
+      var pos = true;
       for (; i < len; i++)
       {
         var c = str[i];

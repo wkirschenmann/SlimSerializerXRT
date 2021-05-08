@@ -17,7 +17,7 @@ namespace Slim.Core
   /// Provides a registry of types, types that do not need to be described in a serialization stream
   /// </summary>
   [Serializable]
-  internal sealed class TypeRegistry : IEnumerable<Type>
+  internal sealed class TypeRegistry
   {
     #region CONSTS
     /// <summary>
@@ -46,14 +46,15 @@ namespace Slim.Core
 
     //20140701 DKh - speed optimization
     private const int STR_HANDLE_POOL_SIZE = 512;
-    internal static readonly string[] StrHandlePool;
+    internal static readonly string[] StrHandlePool = StrHandlePoolInit();
 
-    static TypeRegistry()
+    private static string[] StrHandlePoolInit()
     {
-      StrHandlePool = new string[STR_HANDLE_POOL_SIZE];
-      StrHandlePool[0] = "$N";
+      var output = new string[STR_HANDLE_POOL_SIZE];
+      output[0] = "$N";
       for (var i = 1; i < STR_HANDLE_POOL_SIZE; i++)
-        StrHandlePool[i] = '$' + i.ToString(CultureInfo.InvariantCulture);
+        output[i] = '$' + i.ToString(CultureInfo.InvariantCulture);
+      return output;
     }
 
 
@@ -68,26 +69,20 @@ namespace Slim.Core
     /// <summary>
     /// Initializes TypeRegistry with types from other sources
     /// </summary>
-    public TypeRegistry(IEnumerable<Type>[] others)
+    public TypeRegistry()
     {
       //WARNING!!! These types MUST be at the following positions always at the pre-defined index:
       Add(typeof(NullHandleFakeType));//must be at index zero - NULL HANDLE
       Add(typeof(object));//must be at index 1 - object(not null)
       Add(typeof(object[]));//must be at index 2
       Add(typeof(byte[]));
-
-      if (others != null)
-        foreach (var t in others.Where(_ => !(_ is null)).SelectMany(_ => _).Where(_ => !(_ is null)))
-          Add(t);
     }
 
     #endregion
 
     #region Fields
-    private Dictionary<Type, int> m_Types = new Dictionary<Type, int>(0xff);
-    private List<Type> m_List = new List<Type>(0xff);
-
-    private ulong m_CSum;
+    private readonly Dictionary<Type, int> m_Types = new Dictionary<Type, int>(0xff);
+    private readonly List<Type> m_List = new List<Type>(0xff);
 
     #endregion
 
@@ -103,7 +98,7 @@ namespace Slim.Core
     /// Returns quick checksum of type registry contents.
     /// It is updated when new types get added into the registry
     /// </summary>
-    public ulong CSum => m_CSum;
+    public ulong CSum { get; private set; }
 
 
     private static volatile Dictionary<string, Type> _sTypes = new Dictionary<string, Type>(StringComparer.Ordinal);
@@ -138,7 +133,7 @@ namespace Slim.Core
       }
       catch(Exception e)
       {
-        throw new SlimException("TypeRegistry[handle] is invalid: " + handle.ToString(),e);
+        throw new SlimException("TypeRegistry[handle] is invalid: " + handle,e);
       }
     }
 
@@ -159,26 +154,26 @@ namespace Slim.Core
             //20140701 DKh speed improvement
             var idx = QuickParseInt(handle);
             if (idx < m_List.Count) return m_List[idx];
-            throw new Exception();
+            throw new SlimException($"TypeRegistry : handle value \"{handle}\" is unknown.");
           }
 
-          Type result;
-          if (!_sTypes.TryGetValue(handle, out result))
+          if (!_sTypes.TryGetValue(handle, out var result))
           {
             result = Type.GetType(handle, true);
-            var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal);
-            dict[handle] = result;
+            var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal)
+            {
+              [handle] = result
+            };
             System.Threading.Thread.MemoryBarrier();
             _sTypes = dict;//atomic
           }
 
-          bool added;
-          GetTypeIndex(result, out added);
+          GetTypeIndex(result, out var added);
           return result;
         }
-        catch
+        catch(Exception e)
         {
-          throw new SlimException("TypeRegistry[handle] is invalid: " + (handle ?? CoreConsts.NullString));
+          throw new SlimException("TypeRegistry[handle] is invalid: " + handle,e);
         }
       }
     }
@@ -186,7 +181,7 @@ namespace Slim.Core
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static int QuickParseInt(string str)
     {
-      int result = 0;
+      var result = 0;
       var l = str.Length;
       for (var i = 1; i < l; i++) //0=$, starts at index 1
       {
@@ -203,20 +198,7 @@ namespace Slim.Core
     #endregion
 
     #region Public
-
-    /// <summary>
-    /// Adds the type if it not already in registry and returns true
-    /// </summary>
-    public bool TryAdd(Type type)
-    {
-      var idx = 0;
-      if (m_Types.TryGetValue(type, out idx)) return false;
-      Add(type);
-      return true;
-    }
-
-
-
+    
     /// <summary>
     /// Returns a VarIntStr with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
     /// </summary>
@@ -238,18 +220,6 @@ namespace Slim.Core
     }
 
 
-
-    public IEnumerator<Type> GetEnumerator()
-    {
-      return m_List.GetEnumerator();
-    }
-
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-    {
-      return m_List.GetEnumerator();
-    }
-
-
     #endregion
 
     #region .pvt .impl
@@ -262,11 +232,11 @@ namespace Slim.Core
 
       var tn = t.FullName;
       var len = tn.Length;
-      int csum = (((byte)tn[0]) << 16) |
-                   (((byte)tn[len - 1]) << 8) |
-                   (len & 0xff);
+      var csum = (((byte)tn[0]) << 16) |
+                 (((byte)tn[len - 1]) << 8) |
+                 (len & 0xff);
 
-      m_CSum += (ulong)csum; //unchecked is not needed as there is never going to be> 4,000,000,000 types in registry
+      CSum += (ulong)csum; //unchecked is not needed as there is never going to be> 4,000,000,000 types in registry
       return idx;
     }
 

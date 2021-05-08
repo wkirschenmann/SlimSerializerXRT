@@ -36,20 +36,20 @@ namespace Slim.Core
       }
       else
       {
-        m_Serialize = MakeSerialize();
-        m_Deserialize = MakeDeserialize();
+        Serialize = MakeSerialize();
+        Deserialize = MakeDeserialize();
       }
 
       //Query for "On..." family of attributes
-      m_MethodsOnSerializing = FindAttributedMethods(typeof(OnSerializingAttribute));
-      m_MethodsOnSerialized = FindAttributedMethods(typeof(OnSerializedAttribute));
-      m_MethodsOnDeserializing = FindAttributedMethods(typeof(OnDeserializingAttribute));
-      m_MethodsOnDeserialized = FindAttributedMethods(typeof(OnDeserializedAttribute));
+      MethodsOnSerializing = FindAttributedMethods(typeof(OnSerializingAttribute));
+      MethodsOnSerialized = FindAttributedMethods(typeof(OnSerializedAttribute));
+      MethodsOnDeserializing = FindAttributedMethods(typeof(OnDeserializingAttribute));
+      MethodsOnDeserialized = FindAttributedMethods(typeof(OnDeserializedAttribute));
 
     }
 
     public readonly TypeSchema Schema;
-    public readonly SlimFormat Format;
+    public SlimFormat Format { get; }
     public readonly Type Type;
     public readonly FieldInfo[] Fields;
     public readonly bool CustomIsSerializable;
@@ -57,45 +57,46 @@ namespace Slim.Core
     public readonly bool IsArray;
     public readonly bool IsPrimitiveArray;
 
-    private DynSerialize m_Serialize;
-    private DynDeserialize m_Deserialize;
+    private DynSerialize Serialize { get; }
+    private DynDeserialize Deserialize { get; }
 
 
-    private List<MethodInfo> m_MethodsOnSerializing;
-    private List<MethodInfo> m_MethodsOnSerialized;
-    private List<MethodInfo> m_MethodsOnDeserializing;
-    private List<MethodInfo> m_MethodsOnDeserialized;
+    private List<MethodInfo> MethodsOnSerializing { get; }
+    private List<MethodInfo> MethodsOnSerialized { get; }
+    private List<MethodInfo> MethodsOnDeserializing { get; }
+    private List<MethodInfo> MethodsOnDeserialized { get; }
+
 
     public void SerializeInstance(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork = false)
     {
-      if (m_MethodsOnSerializing != null)
-        InvokeAttributedMethods(m_MethodsOnSerializing, instance, streamingContext);
+      if (MethodsOnSerializing != null)
+        InvokeAttributedMethods(MethodsOnSerializing, instance, streamingContext);
 
-      if (m_Serialize != null)
+      if (Serialize != null)
       {
-        m_Serialize(Schema, writer, registry, refs, instance, streamingContext, serializationForFrameWork);
+        Serialize(Schema, writer, registry, refs, instance, streamingContext, serializationForFrameWork);
       }
       else
       {
-        ISerializable isz = instance as ISerializable;
+        var isz = instance as ISerializable;
         var info = new SerializationInfo(Type, new FormatterConverter());
         isz.GetObjectData(info, streamingContext);
 
         SerializeInfo(writer, registry, refs, info, streamingContext, serializationForFrameWork);
       }
 
-      if (m_MethodsOnSerialized != null)
-        InvokeAttributedMethods(m_MethodsOnSerialized, instance, streamingContext);
+      if (MethodsOnSerialized != null)
+        InvokeAttributedMethods(MethodsOnSerialized, instance, streamingContext);
     }
 
     public void DeserializeInstance(SlimReader reader, TypeRegistry registry, RefPool refs, ref object instance, StreamingContext streamingContext)
     {
-      if (m_MethodsOnDeserializing != null)
-        InvokeAttributedMethods(m_MethodsOnDeserializing, instance, streamingContext);
+      if (MethodsOnDeserializing != null)
+        InvokeAttributedMethods(MethodsOnDeserializing, instance, streamingContext);
 
-      if (m_Deserialize != null)
+      if (Deserialize != null)
       {
-        m_Deserialize(Schema, reader, registry, refs, ref instance, streamingContext);
+        Deserialize(Schema, reader, registry, refs, ref instance, streamingContext);
       }
       else
       {
@@ -110,7 +111,7 @@ namespace Slim.Core
         refs.AddISerializableFixup(instance, info);
       }
 
-      if (m_MethodsOnDeserialized != null)
+      if (MethodsOnDeserialized != null)
       {
         refs.AddOnDeserializedCallback(instance, this);
       }
@@ -119,8 +120,8 @@ namespace Slim.Core
 
     public void InvokeOnDeserializedCallback(object instance, StreamingContext streamingContext)
     {
-      if (m_MethodsOnDeserialized != null)
-        InvokeAttributedMethods(m_MethodsOnDeserialized, instance, streamingContext);
+      if (MethodsOnDeserialized != null)
+        InvokeAttributedMethods(MethodsOnDeserialized, instance, streamingContext);
     }
 
 
@@ -130,10 +131,10 @@ namespace Slim.Core
       SerializationUtils.InvokeSerializationAttributedMethods(methods, instance, streamingContext);
     }
 
-    private List<MethodInfo> FindAttributedMethods(Type atype)
+    private List<MethodInfo> FindAttributedMethods(Type type)
     {
       //20130820 DKh refactored into common code
-      return SerializationUtils.FindSerializationAttributedMethods(Type, atype);
+      return SerializationUtils.FindSerializationAttributedMethods(Type, type);
     }
 
     private DynSerialize MakeSerialize()
@@ -217,7 +218,7 @@ namespace Slim.Core
         foreach (var field in Fields)
         {
           Expression expr = null;
-          Type t = field.FieldType;
+          var t = field.FieldType;
 
           if (Format.IsTypeSupported(t))
           {
@@ -340,7 +341,7 @@ namespace Slim.Core
       else if (IsArray)
       {
         var elmType = Type.GetElementType();
-        var walkArrayRead = typeof(TypeDescriptor).GetMethod(nameof(TypeDescriptor.WalkArrayRead), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(elmType);
+        var walkArrayRead = typeof(TypeDescriptor).GetMethod(nameof(WalkArrayRead), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(elmType);
 
         if (Format.IsTypeSupported(elmType))//array element type
         {
@@ -393,7 +394,7 @@ namespace Slim.Core
         foreach (var field in Fields)
         {
           Expression expr = null;
-          Type t = field.FieldType;
+          var t = field.FieldType;
 
           Expression assignmentTargetExpression;
           if (field.IsInitOnly)//readonly fields must be assigned using reflection
@@ -456,21 +457,21 @@ namespace Slim.Core
             }
           }
 
-          if (assignmentTargetExpression is ParameterExpression)//readonly fields
+          if (assignmentTargetExpression is ParameterExpression expression)//readonly fields
           {
             if (Type.IsValueType)//20150405DKh added
             {
               var vBoxed = Expression.Variable(typeof(object), "vBoxed");
               var box = Expression.Assign(vBoxed, Expression.TypeAs(instance, typeof(object)));//box the value type
               var setField = Expression.Call(Expression.Constant(field),
-                typeof(FieldInfo).GetMethod("SetValue", new Type[] { typeof(object), typeof(object) }),
+                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new [] { typeof(object), typeof(object) }),
                 vBoxed, //on boxed struct
                 Expression.Convert(assignmentTargetExpression, typeof(object))
               );
               var swap = Expression.Assign(instance, Expression.Unbox(vBoxed, Type));
               expressions.Add(
                 Expression.Block
-                (new ParameterExpression[] { (ParameterExpression)assignmentTargetExpression, vBoxed },
+                (new[] { expression, vBoxed },
                   box,
                   expr,
                   setField,
@@ -482,11 +483,11 @@ namespace Slim.Core
             {
 
               var setField = Expression.Call(Expression.Constant(field),
-                typeof(FieldInfo).GetMethod("SetValue", new Type[] { typeof(object), typeof(object) }),
+                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new Type[] { typeof(object), typeof(object) }),
                 instance,
                 Expression.Convert(assignmentTargetExpression, typeof(object))
               );
-              expressions.Add(Expression.Block(new ParameterExpression[] { (ParameterExpression)assignmentTargetExpression }, expr, setField));
+              expressions.Add(Expression.Block(new [] { expression }, expr, setField));
             }
           }
           else
@@ -497,7 +498,7 @@ namespace Slim.Core
 
       expressions.Add(Expression.Assign(pInstance, Expression.Convert(instance, typeof(object))));
 
-      var body = Expression.Block(new ParameterExpression[] { instance }, expressions);
+      var body = Expression.Block(new [] { instance }, expressions);
       return Expression.Lambda<DynDeserialize>(body, pSchema, pReader, pTReg, pRefs, pInstance, pStreamingContext).Compile();
     }
   }

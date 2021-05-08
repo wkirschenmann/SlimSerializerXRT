@@ -16,7 +16,7 @@ namespace Slim.Core
   /// Azos.SlimSlimSerializer is capable of SlimFormat-derived format injection, in which case it will automatically discover new types that are directly supported
   /// by the format.
   /// </summary>
-  public class SlimFormat : StreamerFormat<SlimReader, SlimWriter>
+  internal class SlimFormat : StreamerFormat<SlimReader, SlimWriter>
   {
     public const int MaxByteArrayLen = 512 * //mb
                                           1024 * //kb

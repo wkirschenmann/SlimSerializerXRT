@@ -5,7 +5,6 @@
 </FILE_LICENSE>*/
 
 using System;
-[assembly:CLSCompliant(true)]
 namespace Slim
 {
   /// <summary>

@@ -19,7 +19,9 @@ namespace SlimSerializerFrameworkTest
         serializer.Serialize(stream, TestData.DataModel.ReferenceData.DataSet1);
         var res = stream.ToArray();
         
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
         var str = "{" + BitConverter.ToString(res).Replace("-", ", 0x") + "}";
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
 
         CollectionAssert.AreEqual(TestData.SerializedData.ReferenceData.FromFrameworkData, res);
       }
