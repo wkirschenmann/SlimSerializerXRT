@@ -56,7 +56,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Slim\Slim.csproj">
+    <ProjectReference Include="..\..\Slim\Slim.csproj">
       <Project>{9665be47-9039-436a-80b5-c2ec93c0a9f4}</Project>
       <Name>Slim</Name>
     </ProjectReference>
