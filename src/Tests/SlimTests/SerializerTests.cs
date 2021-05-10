@@ -22,16 +22,16 @@ namespace SlimTests
       byte[] serialized;
       using (var stream = new MemoryStream())
       {
-        Serializer.Serialize(stream, TestData.DataModel.ReferenceData.DataSet1);
+        Serializer.Serialize(stream, ReferenceData.DataSet1);
         serialized = stream.ToArray();
       }
 
       object res;
-      using (var memoryStream = new MemoryStream(serialized))
+      using (var stream = new MemoryStream(serialized))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
-      Assert.AreEqual(TestData.DataModel.ReferenceData.DataSet1, res);
+      Assert.AreEqual(ReferenceData.DataSet1, res);
     }
 
     [Test]
@@ -44,12 +44,12 @@ namespace SlimTests
 #endif //NETCORE21
     {
       object res;
-      using (var memoryStream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromFramework))
+      using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromFramework))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
 
-      Assert.AreEqual(TestData.DataModel.ReferenceData.DataSet1, res);
+      Assert.AreEqual(ReferenceData.DataSet1, res);
     }
 
     [Test]
@@ -62,12 +62,12 @@ namespace SlimTests
 #endif //NETCORE21
     {
       object res;
-      using (var memoryStream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromCore))
+      using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromCore))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
 
-      Assert.AreEqual(TestData.DataModel.ReferenceData.DataSet1, res);
+      Assert.AreEqual(ReferenceData.DataSet1, res);
     }
 
     [Test]
@@ -86,9 +86,9 @@ namespace SlimTests
       }
 
       object res;
-      using (var memoryStream = new MemoryStream(serialized))
+      using (var stream = new MemoryStream(serialized))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
       AllTypesDataInstance.AssertEqual(res);
     }
@@ -103,9 +103,9 @@ namespace SlimTests
 #endif //NETCORE21
     {
       object res;
-      using (var memoryStream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromFramework))
+      using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromFramework))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
       
       AllTypesDataInstance.AssertEqual(res);
@@ -121,9 +121,9 @@ namespace SlimTests
 #endif //NETCORE21
     {
       object res;
-      using (var memoryStream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromCore))
+      using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromCore))
       {
-        res = Serializer.Deserialize(memoryStream);
+        res = Serializer.Deserialize(stream);
       }
       
       AllTypesDataInstance.AssertEqual(res);

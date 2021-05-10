@@ -15,7 +15,7 @@ namespace SerializedDataGenerator
   public static class DataSets
   {
     public static readonly AllTypesData AllTypesData = new AllTypesData(10);
-    public static readonly MyDataSet MyDataSet = TestData.DataModel.ReferenceData.DataSet1;
+    public static readonly MyDataSet MyDataSet = ReferenceData.DataSet1;
   }
 
   public static class Program
