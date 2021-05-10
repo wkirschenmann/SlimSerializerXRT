@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -21,20 +19,20 @@ namespace Slim.Core
   internal struct MetaHandle : IEquatable<MetaHandle>
   {
     internal const int InlinedStringHandle = 0;
-    internal const int InlinedValuetypeHandle = 1;
-    internal const int InlinedReftypeHandle = 2;
-    internal const int InlinedTypevalHandle = 3;
+    internal const int InlinedValueTypeHandle = 1;
+    internal const int InlinedRefTypeHandle = 2;
+    internal const int InlinedTypeValHandle = 3;
     internal const int HandleOffset = 4;
 
 
-    internal int HandleRawValue { get;  }
+    internal int HandleRawValue { get; }
     private VarIntStr? m_Metadata;
 
 
     /// <summary>
     /// Returns handle value. This value is invalid if special conditions such as inlining are true
     /// </summary>
-    public int Handle =>  HandleRawValue - HandleOffset; 
+    public int Handle => HandleRawValue - HandleOffset;
 
     /// <summary>
     /// Indicates whether a string instance is inlined in Metadata property
@@ -44,24 +42,24 @@ namespace Slim.Core
     /// <summary>
     /// Indicates whether a struct (value type) instance is inlined right after this handle and Metadata property contains type
     /// </summary>
-    public bool IsInlinedValueType => HandleRawValue == InlinedValuetypeHandle;
+    public bool IsInlinedValueType => HandleRawValue == InlinedValueTypeHandle;
 
     /// <summary>
     /// Indicates whether a reference (reference type) instance is inlined right after this handle and Metadata property contains type.
     /// This is used for handling of ref types that are natively supported by streamers
     /// </summary>
-    public bool IsInlinedRefType => HandleRawValue == InlinedReftypeHandle;
+    public bool IsInlinedRefType => HandleRawValue == InlinedRefTypeHandle;
 
     /// <summary>
     /// Indicates whether a reference to TYPE is inlined - that is a Metadata parameter points to the value of type (reference to Type)
     /// </summary>
-    public bool IsInlinedTypeValue => HandleRawValue == InlinedTypevalHandle;
+    public bool IsInlinedTypeValue => HandleRawValue == InlinedTypeValHandle;
 
 
     public VarIntStr? Metadata => m_Metadata;
 
 
-    public MetaHandle(int handle, bool raw = false):this(handle, null, raw)
+    public MetaHandle(int handle, bool raw = false) : this(handle, null, raw)
     { }
 
     public MetaHandle(bool serializer, int handle)
@@ -100,7 +98,7 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineValueType(VarIntStr? inlinedValueType)
     {
-      var result = new MetaHandle(InlinedReftypeHandle, true)
+      var result = new MetaHandle(InlinedRefTypeHandle, true)
       {
         m_Metadata = inlinedValueType
       };
@@ -112,7 +110,7 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineRefType(VarIntStr? inlinedRefType)
     {
-      var result = new MetaHandle(InlinedReftypeHandle, true)
+      var result = new MetaHandle(InlinedRefTypeHandle, true)
       {
         m_Metadata = inlinedRefType
       };
@@ -124,7 +122,7 @@ namespace Slim.Core
     /// </summary>
     public static MetaHandle InlineTypeValue(VarIntStr? inlinedTypeValue)
     {
-      var result = new MetaHandle(InlinedReftypeHandle, true)
+      var result = new MetaHandle(InlinedRefTypeHandle, true)
       {
         m_Metadata = inlinedTypeValue
       };
@@ -146,7 +144,7 @@ namespace Slim.Core
     {
       if (obj == null) return false;
       var other = (MetaHandle)obj;
-      return this.Equals(other);
+      return Equals(other);
     }
 
     public bool Equals(MetaHandle other)

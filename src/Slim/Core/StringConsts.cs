@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -39,13 +37,13 @@ namespace Slim.Core
     internal const string BadHeaderError =
         "Bad SLIM format header";
 
-    internal const string TregCountError =
+    internal const string TypeRegistryCountError =
         "Slim type registry count mismatch";
 
-    internal const string TregCsumError =
+    internal const string TypeRegistryCSumError =
         "Slim type registry CSUM mismatch";
 
-    public const string HndltorefMissingTypeNameError =
+    public const string HandleToRefMissingTypeNameError =
         "HandleToReference(). Missing type name: ";
 
     internal const string ArraysTypeNotArrayError =

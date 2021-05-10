@@ -2,10 +2,10 @@
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
+using Slim.Core;
+
 using System;
 using System.Runtime.Serialization;
-
-using Slim.Core;
 
 namespace Slim
 {
@@ -16,7 +16,7 @@ namespace Slim
   public sealed class SlimException : Exception
   {
     public const string FromFldName = "DAE-F";
-    
+
     public SlimException() { }
     public SlimException(string message) : base(message) { }
     public SlimException(string message, Exception inner) : base(message, inner) { }
@@ -35,7 +35,7 @@ namespace Slim
     public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
       if (info == null)
-        throw new ArgumentNullException(nameof(info),  $"{GetType().Name}.{nameof(GetObjectData)}({nameof(info)}=null)");
+        throw new ArgumentNullException(nameof(info), $"{GetType().Name}.{nameof(GetObjectData)}({nameof(info)}=null)");
       info.AddValue(FromFldName, m_From);
       base.GetObjectData(info, context);
     }

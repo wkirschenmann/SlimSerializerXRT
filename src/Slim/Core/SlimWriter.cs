@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -13,7 +11,7 @@ namespace Slim.Core
   /// </summary>
   internal class SlimWriter : WritingStreamer
   {
-    
+
     public override void Flush()
     {
       Stream.Flush();
@@ -29,22 +27,22 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(byte? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
-        this.Write(value.Value);
+        Write(true);
+        Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -52,15 +50,15 @@ namespace Slim.Core
     {
       if (buffer == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = buffer.Length;
       if (len > SlimFormat.MaxByteArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "bytes", SlimFormat.MaxByteArrayLen));
 
-      this.Write(len);
+      Write(len);
       Stream.Write(buffer, 0, len);
     }
 
@@ -69,17 +67,17 @@ namespace Slim.Core
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
       if (len > SlimFormat.MaxIntArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "ints", SlimFormat.MaxIntArrayLen));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(value[i]); //WITH compression
+        Write(value[i]); //WITH compression
     }
 
 
@@ -87,17 +85,17 @@ namespace Slim.Core
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
       if (len > SlimFormat.MaxLongArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "longs", SlimFormat.MaxLongArrayLen));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(value[i]); //WITH compression
+        Write(value[i]); //WITH compression
     }
 
 
@@ -105,68 +103,68 @@ namespace Slim.Core
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
       if (len > SlimFormat.MaxDoubleArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "doubles", SlimFormat.MaxDoubleArrayLen));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(value[i]);
+        Write(value[i]);
     }
 
     public override void Write(float[] value)
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
       if (len > SlimFormat.MaxFloatArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "floats", SlimFormat.MaxFloatArrayLen));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(value[i]);
+        Write(value[i]);
     }
 
     public override void Write(decimal[] value)
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = value.Length;
       if (len > SlimFormat.MaxDecimalArrayLen)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "decimals", SlimFormat.MaxDecimalArrayLen));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(value[i]);
+        Write(value[i]);
     }
 
 
     public override void Write(char ch)
     {
-      this.Write((short)ch);
+      Write((short)ch);
     }
 
     public override void Write(char? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -175,12 +173,12 @@ namespace Slim.Core
     {
       if (buffer == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
 
       var buf = Encoding.GetBytes(buffer);
-      this.Write(buf);
+      Write(buf);
     }
 
 
@@ -188,41 +186,41 @@ namespace Slim.Core
     {
       if (array == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
-      this.Write(true);
+      Write(true);
       var len = array.Length;
       if (len > SlimFormat.MaxStringArrayCnt)
         throw new SlimException(StringConsts.WriteXArrayMaxSizeError.Args(len, "strings", SlimFormat.MaxStringArrayCnt));
 
-      this.Write(len);
+      Write(len);
       for (var i = 0; i < len; i++)
-        this.Write(array[i]);
+        Write(array[i]);
     }
 
     public override void Write(decimal value)
     {
       var bits = decimal.GetBits(value);
-      this.Write(bits[0]);
-      this.Write(bits[1]);
-      this.Write(bits[2]);
+      Write(bits[0]);
+      Write(bits[1]);
+      Write(bits[2]);
 
       var sign = (bits[3] & 0x80000000) != 0 ? (byte)0x80 : (byte)0x00;
       var scale = (byte)((bits[3] >> 16) & 0x7F);
 
-      this.Write((byte)(sign | scale));
+      Write((byte)(sign | scale));
     }
 
     public override void Write(decimal? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -246,11 +244,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -268,11 +266,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -283,7 +281,7 @@ namespace Slim.Core
       if (value < 0)
       {
         b = 1;
-        value = ~value;//turn off minus bit but dont +1
+        value = ~value;//turn off minus bit but don't +1
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
@@ -307,11 +305,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(long value)
@@ -321,7 +319,7 @@ namespace Slim.Core
       if (value < 0)
       {
         b = 1;
-        value = ~value;//turn off minus bit but dont +1
+        value = ~value;//turn off minus bit but don't +1
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
@@ -345,11 +343,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -362,11 +360,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -377,7 +375,7 @@ namespace Slim.Core
       if (value < 0)
       {
         b = 1;
-        value = (short)~value;//turn off minus bit but dont +1
+        value = (short)~value;//turn off minus bit but don't +1
       }
 
       b = (byte)(b | ((value & 0x3f) << 1));
@@ -401,11 +399,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -413,27 +411,27 @@ namespace Slim.Core
     {
       if (value == null)
       {
-        this.Write(false);
+        Write(false);
         return;
       }
 
-      this.Write(true);
+      Write(true);
 
       var len = value.Length;
       if (len > SlimFormat.MaxStrLen)//This is much faster than Encoding.GetByteCount()
       {
         var buf = Encoding.GetBytes(value);
-        this.Write(buf.Length);
+        Write(buf.Length);
         Stream.Write(buf, 0, buf.Length);
         return;
       }
 
       //try to reuse pre-allocated buffer
       if (SlimFormat.TsStrBuff == null) SlimFormat.TsStrBuff = new byte[SlimFormat.StrBufSz];
-      var bcnt = Encoding.GetBytes(value, 0, len, SlimFormat.TsStrBuff, 0);
+      var byteCount = Encoding.GetBytes(value, 0, len, SlimFormat.TsStrBuff, 0);
 
-      this.Write(bcnt);
-      Stream.Write(SlimFormat.TsStrBuff, 0, bcnt);
+      Write(byteCount);
+      Stream.Write(SlimFormat.TsStrBuff, 0, byteCount);
     }
 
     public override void Write(uint value)
@@ -454,11 +452,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(ulong value)
@@ -479,11 +477,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -505,11 +503,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -543,10 +541,10 @@ namespace Slim.Core
       if (meta)
       {
         var vis = value.Metadata.Value;
-        this.Write(vis.StringValue);
+        Write(vis.StringValue);
 
         if (vis.StringValue == null)
-          this.Write(vis.IntValue);
+          Write(vis.IntValue);
       }
     }
 
@@ -555,11 +553,11 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
@@ -576,62 +574,62 @@ namespace Slim.Core
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
 
     public override void Write(TimeSpan value)
     {
-      this.Write(value.Ticks);
+      Write(value.Ticks);
     }
 
     public override void Write(TimeSpan? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(Guid value)
     {
-      this.Write(value.ToByteArray());
+      Write(value.ToByteArray());
     }
 
     public override void Write(Guid? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
     public override void Write(VarIntStr value)
     {
-      this.Write(value.StringValue);
+      Write(value.StringValue);
       if (value.StringValue == null)
-        this.Write(value.IntValue);
+        Write(value.IntValue);
     }
 
     public override void Write(VarIntStr? value)
     {
       if (value.HasValue)
       {
-        this.Write(true);
+        Write(true);
         Write(value.Value);
         return;
       }
-      this.Write(false);
+      Write(false);
     }
 
   }

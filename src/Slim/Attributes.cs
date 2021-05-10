@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -12,7 +10,7 @@ namespace Slim
   ///  the ctor() on deserialization
   /// </summary>
   [AttributeUsage(AttributeTargets.Constructor)]
-  public sealed class SlimDeserializationCtorSkipAttribute : Attribute {}
+  public sealed class SlimDeserializationCtorSkipAttribute : Attribute { }
 
 
   /// <summary>

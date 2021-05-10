@@ -2,19 +2,17 @@
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
+using Slim.Core;
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
-using Slim.Core;
 
 namespace Slim
 {
   /// <summary>
-  /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) paremeter.
-  /// This class was designed for highly-efficient serialization of types without versioning.
+  /// Implements Slim serialization algorithm that relies on an injectable SlimFormat-derivative (through .ctor) parameter.
+  /// This class was designed for highly-efficient serialization of types without versionning.
   /// SlimSerializer supports a concept of "known types" that save space by not emitting their names into stream.
   /// Performance note:
   /// This serializer yields on average 1/4 serialization and 1/2 deserialization times while compared to BinaryFormatter.
@@ -34,7 +32,7 @@ namespace Slim
 
     #region Fields
 
-    private SlimFormat Format { get; }= SlimFormat.Instance;
+    private SlimFormat Format { get; } = SlimFormat.Instance;
 
     #endregion
 
@@ -47,9 +45,7 @@ namespace Slim
     {
       try
       {
-        SlimWriter writer;
-
-          writer = Format.MakeWritingStreamer();
+        var writer = Format.MakeWritingStreamer();
 
         var pool = ReservePool(SerializationOperation.Serializing);
         try
@@ -143,16 +139,16 @@ namespace Slim
       if (root is Type rootType)
         root = new RootTypeBox { TypeValue = rootType };
 
-      var scontext = new StreamingContext();
+      var streamingContext = new StreamingContext();
       var registry = new TypeRegistry();
       var type = root != null ? root.GetType() : typeof(object);
       var isValType = type.IsValueType;
 
 
       WriteHeader(writer);
-      var rcount = registry.Count;
+      var registryCount = registry.Count;
 
-      writer.Write((uint)rcount);
+      writer.Write((uint)registryCount);
       writer.Write(registry.CSum);
 
 
@@ -160,7 +156,7 @@ namespace Slim
       if (!isValType && root != null)
         pool.Add(root);
 
-      Format.TypeSchema.Serialize(writer, registry, pool, root, scontext, serializationForFrameWork);
+      Format.TypeSchema.Serialize(writer, registry, pool, root, streamingContext, serializationForFrameWork);
 
 
       if (root == null) return;
@@ -176,9 +172,9 @@ namespace Slim
       for (; i < pool.Count; i++)
       {
         var instance = pool[i];
-        var tinst = instance.GetType();
-        if (!Format.IsRefTypeSupported(tinst))
-          ts.Serialize(writer, registry, pool, instance, scontext, serializationForFrameWork);
+        var typeInstance = instance.GetType();
+        if (!Format.IsRefTypeSupported(typeInstance))
+          ts.Serialize(writer, registry, pool, instance, streamingContext, serializationForFrameWork);
       }
 
     }
@@ -194,9 +190,9 @@ namespace Slim
 
         ReadHeader(reader);
         if (reader.ReadUInt() != registryCount)
-          throw new SlimException(StringConsts.TregCountError);
+          throw new SlimException(StringConsts.TypeRegistryCountError);
         if (reader.ReadULong() != registry.CSum)
-          throw new SlimException(StringConsts.TregCsumError);
+          throw new SlimException(StringConsts.TypeRegistryCSumError);
 
         //Read root
         //Deser will add root to pool[1] if its ref-typed
@@ -226,8 +222,8 @@ namespace Slim
         for (; i < pool.Count; i++)
         {
           var instance = pool[i];
-          var tinst = instance.GetType();
-          if (!Format.IsRefTypeSupported(tinst))
+          var typeInstance = instance.GetType();
+          if (!Format.IsRefTypeSupported(typeInstance))
             ts.DeserializeRefTypeInstance(instance, reader, registry, pool, streamingContext);
         }
 
@@ -235,22 +231,16 @@ namespace Slim
 
       //perform fixups for ISerializable
       //---------------------------------------------
-      var fxps = pool.Fixups;
-      for (var i = 0; i < fxps.Count; i++)
+      var fixups = pool.Fixups;
+      foreach (var fixup in fixups)
       {
-        var fixup = fxps[i];
         var t = fixup.Instance.GetType();
         var ctor = SerializationUtils.GetISerializableCtorInfo(t);
 
-        if (ctor == null) continue;//20171223 DKh ISerializable does not mandate the .ctor(info, context),
-                                   //for example, in net-core they use info.SetType() to redefine comparers
-                                   //so the actual comparer does not have a .ctor at all (which is very odd)
-
-        //Before 20171223 DKh change
-        //if (ctor==null)
-        // throw new SlimDeserializationException(StringConsts.SLIM_ISERIALIZABLE_MISSING_CTOR_ERROR + t.FullName);
-
-        ctor.Invoke(fixup.Instance, new object[] { fixup.Info, streamingContext });
+        if (ctor != null)
+        {
+          ctor.Invoke(fixup.Instance, new object[] {fixup.Info, streamingContext});
+        }
       }
 
 
@@ -259,9 +249,8 @@ namespace Slim
       //invoke OnDeserialized-decorated methods
       //--------------------------------------------
       var odc = pool.OnDeserializedCallbacks;
-      for (var i = 0; i < odc.Count; i++)
+      foreach (var cb in odc)
       {
-        var cb = odc[i];
         cb.Descriptor.InvokeOnDeserializedCallback(cb.Instance, streamingContext);
       }
 

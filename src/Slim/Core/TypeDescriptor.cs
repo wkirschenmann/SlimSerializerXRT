@@ -236,7 +236,7 @@ namespace Slim.Core
           }
           else // complex type ->  struct or reference
           {
-            if (!t.IsValueType)//reference type -> write metahandle
+            if (!t.IsValueType)//reference type -> write metaHandle
             {
               expr = Expression.Call(pSchema,
                 typeof(TypeSchema).GetMethod(nameof(TypeSchema.WriteRefMetaHandle)),
@@ -274,12 +274,12 @@ namespace Slim.Core
       writer.Write(registry.GetTypeHandle(info.ObjectType, serializationForFrameWork));//20171223 DKh
       writer.Write(info.MemberCount);
 
-      var senum = info.GetEnumerator();
-      while (senum.MoveNext())
+      var serializationInfoEnumerator = info.GetEnumerator();
+      while (serializationInfoEnumerator.MoveNext())
       {
-        writer.Write(senum.Name);
-        writer.Write(registry.GetTypeHandle(senum.ObjectType, serializationForFrameWork));
-        Schema.Serialize(writer, registry, refs, senum.Value, streamingContext, serializationForFrameWork);
+        writer.Write(serializationInfoEnumerator.Name);
+        writer.Write(registry.GetTypeHandle(serializationInfoEnumerator.ObjectType, serializationForFrameWork));
+        Schema.Serialize(writer, registry, refs, serializationInfoEnumerator.Value, streamingContext, serializationForFrameWork);
       }
     }
 
@@ -425,7 +425,7 @@ namespace Slim.Core
           }
           else // complex type ->  struct or reference
           {
-            if (!t.IsValueType)//reference type -> read metahandle
+            if (!t.IsValueType)//reference type -> read metaHandle
             {
               expr = Expression.Assign(
                 assignmentTargetExpression,
@@ -464,7 +464,7 @@ namespace Slim.Core
               var vBoxed = Expression.Variable(typeof(object), "vBoxed");
               var box = Expression.Assign(vBoxed, Expression.TypeAs(instance, typeof(object)));//box the value type
               var setField = Expression.Call(Expression.Constant(field),
-                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new [] { typeof(object), typeof(object) }),
+                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new[] { typeof(object), typeof(object) }),
                 vBoxed, //on boxed struct
                 Expression.Convert(assignmentTargetExpression, typeof(object))
               );
@@ -487,7 +487,7 @@ namespace Slim.Core
                 instance,
                 Expression.Convert(assignmentTargetExpression, typeof(object))
               );
-              expressions.Add(Expression.Block(new [] { expression }, expr, setField));
+              expressions.Add(Expression.Block(new[] { expression }, expr, setField));
             }
           }
           else
@@ -498,7 +498,7 @@ namespace Slim.Core
 
       expressions.Add(Expression.Assign(pInstance, Expression.Convert(instance, typeof(object))));
 
-      var body = Expression.Block(new [] { instance }, expressions);
+      var body = Expression.Block(new[] { instance }, expressions);
       return Expression.Lambda<DynDeserialize>(body, pSchema, pReader, pTReg, pRefs, pInstance, pStreamingContext).Compile();
     }
   }

@@ -36,7 +36,8 @@ namespace TestData.DataModel
 
     public int GetHashCode(KeyValuePair<string, string> obj)
     {
-      return (obj.Key is null ? 0 : obj.Key.GetHashCode()) + (obj.Value is null ? 0 : obj.Value.GetHashCode());    }
+      return (obj.Key is null ? 0 : obj.Key.GetHashCode()) + (obj.Value is null ? 0 : obj.Value.GetHashCode());
+    }
   }
 
   [Serializable]
@@ -64,12 +65,12 @@ namespace TestData.DataModel
     {
       if (other is null) return false;
       if (ReferenceEquals(this, other)) return true;
-      return Values1.OrderByDescending(kvp=>kvp.Key)
-                    .SequenceEqual(other.Values1.OrderByDescending(kvp=>kvp.Key),MvcComparerInternals.Instance) &&
-             Values2.OrderByDescending(kvp=>kvp.Key)
-                    .SequenceEqual(other.Values2.OrderByDescending(kvp=>kvp.Key),MvcComparerInternals.Instance) &&
-             Values3.OrderByDescending(kvp=>kvp.Key)
-                    .SequenceEqual(other.Values3.OrderByDescending(kvp=>kvp.Key),MvcComparerInternals.Instance)
+      return Values1.OrderByDescending(kvp => kvp.Key)
+                    .SequenceEqual(other.Values1.OrderByDescending(kvp => kvp.Key), MvcComparerInternals.Instance) &&
+             Values2.OrderByDescending(kvp => kvp.Key)
+                    .SequenceEqual(other.Values2.OrderByDescending(kvp => kvp.Key), MvcComparerInternals.Instance) &&
+             Values3.OrderByDescending(kvp => kvp.Key)
+                    .SequenceEqual(other.Values3.OrderByDescending(kvp => kvp.Key), MvcComparerInternals.Instance)
              ;
     }
 
@@ -77,7 +78,7 @@ namespace TestData.DataModel
     {
       if (obj is null) return false;
       if (ReferenceEquals(this, obj)) return true;
-      return obj.GetType() == this.GetType() && Equals((MyValueClass) obj);
+      return obj.GetType() == GetType() && Equals((MyValueClass)obj);
     }
 
     public static bool operator ==(MyValueClass lhs, MyValueClass rhs) => lhs != null && lhs.Equals(rhs);

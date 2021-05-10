@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -24,9 +22,9 @@ namespace Slim.Core
 
     public override bool? ReadNullableBool()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadBool();
+      if (has) return ReadBool();
 
       return null;
     }
@@ -34,9 +32,9 @@ namespace Slim.Core
 
     public override byte? ReadNullableByte()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadByte();
+      if (has) return ReadByte();
 
       return null;
     }
@@ -44,10 +42,10 @@ namespace Slim.Core
 
     public override byte[] ReadByteArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxByteArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "bytes", SlimFormat.MaxByteArrayLen));
 
@@ -61,10 +59,10 @@ namespace Slim.Core
 
     public override int[] ReadIntArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxIntArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "ints", SlimFormat.MaxIntArrayLen));
 
@@ -72,7 +70,7 @@ namespace Slim.Core
 
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadInt();
+        result[i] = ReadInt();
 
       return result;
     }
@@ -80,10 +78,10 @@ namespace Slim.Core
 
     public override long[] ReadLongArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxLongArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "longs", SlimFormat.MaxLongArrayLen));
 
@@ -91,7 +89,7 @@ namespace Slim.Core
 
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadLong();
+        result[i] = ReadLong();
 
       return result;
     }
@@ -99,10 +97,10 @@ namespace Slim.Core
 
     public override double[] ReadDoubleArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxDoubleArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "doubles", SlimFormat.MaxDoubleArrayLen));
 
@@ -110,7 +108,7 @@ namespace Slim.Core
 
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadDouble();
+        result[i] = ReadDouble();
 
       return result;
     }
@@ -118,10 +116,10 @@ namespace Slim.Core
 
     public override float[] ReadFloatArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxFloatArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "floats", SlimFormat.MaxFloatArrayLen));
 
@@ -129,17 +127,17 @@ namespace Slim.Core
 
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadFloat();
+        result[i] = ReadFloat();
 
       return result;
     }
 
     public override decimal[] ReadDecimalArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var len = this.ReadInt();
+      var len = ReadInt();
       if (len > SlimFormat.MaxDecimalArrayLen)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "decimals", SlimFormat.MaxDecimalArrayLen));
 
@@ -147,7 +145,7 @@ namespace Slim.Core
 
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadDecimal();
+        result[i] = ReadDecimal();
 
       return result;
     }
@@ -155,14 +153,14 @@ namespace Slim.Core
 
     public override char ReadChar()
     {
-      return (char)this.ReadShort();
+      return (char)ReadShort();
     }
 
     public override char? ReadNullableChar()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadChar();
+      if (has) return ReadChar();
 
       return null;
     }
@@ -170,7 +168,7 @@ namespace Slim.Core
 
     public override char[] ReadCharArray()
     {
-      var buf = this.ReadByteArray();
+      var buf = ReadByteArray();
       if (buf == null) return null;
 
       return Encoding.GetChars(buf);
@@ -179,9 +177,9 @@ namespace Slim.Core
 
     public override string[] ReadStringArray()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
-      var len = this.ReadInt();
+      var len = ReadInt();
 
       if (len > SlimFormat.MaxStringArrayCnt)
         throw new SlimException(StringConsts.ReadXArrayMaxSizeError.Args(len, "strings", SlimFormat.MaxStringArrayCnt));
@@ -190,17 +188,17 @@ namespace Slim.Core
       var result = new string[len];
 
       for (var i = 0; i < len; i++)
-        result[i] = this.ReadString();
+        result[i] = ReadString();
 
       return result;
     }
 
     public override decimal ReadDecimal()
     {
-      var bits0 = this.ReadInt();
-      var bits1 = this.ReadInt();
-      var bits2 = this.ReadInt();
-      var bits3 = this.ReadByte();
+      var bits0 = ReadInt();
+      var bits1 = ReadInt();
+      var bits2 = ReadInt();
+      var bits3 = ReadByte();
       return new Decimal(bits0,
                           bits1,
                           bits2,
@@ -210,9 +208,9 @@ namespace Slim.Core
 
     public override decimal? ReadNullableDecimal()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDecimal();
+      if (has) return ReadDecimal();
 
       return null;
     }
@@ -222,15 +220,15 @@ namespace Slim.Core
     {
       ReadFromStream(GetBuff32(), 8);
 
-      var seg1 = (uint)((int)GetBuff32()[0] |
-                        (int)GetBuff32()[1] << 8 |
-                        (int)GetBuff32()[2] << 16 |
-                        (int)GetBuff32()[3] << 24);
+      var seg1 = (uint)(GetBuff32()[0] |
+                        GetBuff32()[1] << 8 |
+                        GetBuff32()[2] << 16 |
+                        GetBuff32()[3] << 24);
 
-      var seg2 = (uint)((int)GetBuff32()[4] |
-                        (int)GetBuff32()[5] << 8 |
-                        (int)GetBuff32()[6] << 16 |
-                        (int)GetBuff32()[7] << 24);
+      var seg2 = (uint)(GetBuff32()[4] |
+                        GetBuff32()[5] << 8 |
+                        GetBuff32()[6] << 16 |
+                        GetBuff32()[7] << 24);
 
       var core = (ulong)seg2 << 32 | (ulong)seg1;
 
@@ -239,9 +237,9 @@ namespace Slim.Core
 
     public override double? ReadNullableDouble()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDouble();
+      if (has) return ReadDouble();
 
       return null;
     }
@@ -251,18 +249,18 @@ namespace Slim.Core
     {
       ReadFromStream(GetBuff32(), 4);
 
-      var core = (uint)((int)GetBuff32()[0] |
-                        (int)GetBuff32()[1] << 8 |
-                        (int)GetBuff32()[2] << 16 |
-                        (int)GetBuff32()[3] << 24);
+      var core = (uint)(GetBuff32()[0] |
+                        GetBuff32()[1] << 8 |
+                        GetBuff32()[2] << 16 |
+                        GetBuff32()[3] << 24);
       return *(float*)(&core);
     }
 
     public override float? ReadNullableFloat()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadFloat();
+      if (has) return ReadFloat();
 
       return null;
     }
@@ -279,18 +277,18 @@ namespace Slim.Core
 
       var has = (b & 0x80) > 0;
       result |= ((b & 0x7f) >> 1);
-      var bitcnt = 6;
+      var bitCount = 6;
 
       while (has)
       {
-        if (bitcnt > 31)
+        if (bitCount > 31)
           throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt()");
 
         b = Stream.ReadByte();
         if (b < 0) throw new SlimException(StringConsts.StreamCorruptedError + "ReadInt(): eof");
         has = (b & 0x80) > 0;
-        result |= (b & 0x7f) << bitcnt;
-        bitcnt += 7;
+        result |= (b & 0x7f) << bitCount;
+        bitCount += 7;
       }
 
       return neg ? ~result : result;
@@ -299,9 +297,9 @@ namespace Slim.Core
 
     public override int? ReadNullableInt()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadInt();
+      if (has) return ReadInt();
 
       return null;
     }
@@ -337,9 +335,9 @@ namespace Slim.Core
 
     public override long? ReadNullableLong()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadLong();
+      if (has) return ReadLong();
 
       return null;
     }
@@ -354,9 +352,9 @@ namespace Slim.Core
 
     public override sbyte? ReadNullableSByte()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadSByte();
+      if (has) return ReadSByte();
 
       return null;
     }
@@ -392,7 +390,7 @@ namespace Slim.Core
 
     public override short? ReadNullableShort()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
       if (has) return ReadShort();
 
@@ -401,10 +399,10 @@ namespace Slim.Core
 
     public override string ReadString()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
       if (!has) return null;
 
-      var bsz = this.ReadInt();
+      var bsz = ReadInt();
       if (bsz < SlimFormat.StrBufSz)
       {
         if (SlimFormat.TsStrBuff == null) SlimFormat.TsStrBuff = new byte[SlimFormat.StrBufSz];
@@ -446,9 +444,9 @@ namespace Slim.Core
 
     public override uint? ReadNullableUInt()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadUInt();
+      if (has) return ReadUInt();
 
       return null;
     }
@@ -477,9 +475,9 @@ namespace Slim.Core
 
     public override ulong? ReadNullableULong()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadULong();
+      if (has) return ReadULong();
 
       return null;
     }
@@ -507,9 +505,9 @@ namespace Slim.Core
 
     public override ushort? ReadNullableUShort()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadUShort();
+      if (has) return ReadUShort();
 
       return null;
     }
@@ -555,9 +553,9 @@ namespace Slim.Core
 
     public override MetaHandle? ReadNullableMetaHandle()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadMetaHandle();
+      if (has) return ReadMetaHandle();
 
       return null;
     }
@@ -573,9 +571,9 @@ namespace Slim.Core
 
     public override DateTime? ReadNullableDateTime()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadDateTime();
+      if (has) return ReadDateTime();
 
       return null;
     }
@@ -583,15 +581,15 @@ namespace Slim.Core
 
     public override TimeSpan ReadTimeSpan()
     {
-      var ticks = this.ReadLong();
+      var ticks = ReadLong();
       return TimeSpan.FromTicks(ticks);
     }
 
     public override TimeSpan? ReadNullableTimeSpan()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadTimeSpan();
+      if (has) return ReadTimeSpan();
 
       return null;
     }
@@ -599,32 +597,32 @@ namespace Slim.Core
 
     public override Guid ReadGuid()
     {
-      var arr = this.ReadByteArray();
+      var arr = ReadByteArray();
       return new Guid(arr);
     }
 
     public override Guid? ReadNullableGuid()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadGuid();
+      if (has) return ReadGuid();
 
       return null;
     }
 
     public override VarIntStr ReadVarIntStr()
     {
-      var str = this.ReadString();
+      var str = ReadString();
       if (str != null) return new VarIntStr(str);
 
-      return new VarIntStr(this.ReadUInt());
+      return new VarIntStr(ReadUInt());
     }
 
     public override VarIntStr? ReadNullableVarIntStr()
     {
-      var has = this.ReadBool();
+      var has = ReadBool();
 
-      if (has) return this.ReadVarIntStr();
+      if (has) return ReadVarIntStr();
 
       return null;
     }

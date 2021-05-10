@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -13,7 +11,7 @@ namespace Slim.Core
   /// A format that writes into binary files in an efficient way using variable-length integers, strings and meta handles.
   /// Developers may derive new formats that support custom serialization of their business-related types. This may increase performance dramatically.
   /// For example, in a drawing application a new format may derive from SlimFormat to natively serialize Point and PolarPoint structs to yield faster serialization times.
-  /// Azos.SlimSlimSerializer is capable of SlimFormat-derived format injection, in which case it will automatically discover new types that are directly supported
+  /// SlimSlimSerializer is capable of SlimFormat-derived format injection, in which case it will automatically discover new types that are directly supported
   /// by the format.
   /// </summary>
   internal class SlimFormat : StreamerFormat<SlimReader, SlimWriter>
@@ -48,7 +46,7 @@ namespace Slim.Core
 
     [ThreadStatic] internal static byte[] TsStrBuff;
 
-    protected SlimFormat() : base()
+    protected SlimFormat()
     {
       TypeSchema = new TypeSchema(this);
     }

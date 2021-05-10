@@ -1,11 +1,9 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
-using System.Text;
 using System.IO;
+using System.Text;
 
 namespace Slim.Core
 {
@@ -19,8 +17,6 @@ namespace Slim.Core
 
     protected Streamer()
     {
-      Encoding = Utf8Encoding;
-
       if (SlimFormat.TsBuff32 is null)
       {
         SlimFormat.TsBuff32 = new byte[32];
@@ -35,8 +31,7 @@ namespace Slim.Core
     }
 
     protected Stream Stream { get; private set; }
-    protected Encoding Encoding { get; private set; }
-
+    protected Encoding Encoding { get; } = Utf8Encoding;
 
 
     /// <summary>

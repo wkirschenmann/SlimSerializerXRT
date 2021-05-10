@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -8,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Reflection;
+using System.Text;
 
 namespace Slim.Core
 {
@@ -85,7 +83,7 @@ namespace Slim.Core
       m_ReadMethodsRefT = new Dictionary<Type, MethodInfo>();
       m_WriteMethodsRefT = new Dictionary<Type, MethodInfo>();
 
-      var t = this.WriterType;//typeof(TWriter);
+      var t = WriterType;//typeof(TWriter);
 
       var wMethods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public)
                       .Where(mi => mi.Name.Equals("Write", StringComparison.Ordinal) &&   //do not localize
@@ -102,7 +100,7 @@ namespace Slim.Core
           m_WriteMethodsRefT.Add(pt, mi);
       }
 
-      t = this.ReaderType;//typeof(TReader);
+      t = ReaderType;//typeof(TReader);
 
       var rMethods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public)
                       .Where(mi => mi.Name.StartsWith("Read", StringComparison.InvariantCulture) && mi.ReturnType != typeof(void) && !mi.IsConstructor);//do not localize

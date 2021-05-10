@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -32,7 +30,7 @@ namespace Slim.Core
         return "$2|" + array.Length;
 
 
-      var th = typeHandle.StringValue ??
+      var typeHandleStringValue = typeHandle.StringValue ??
               (typeHandle.IntValue < TypeRegistry.StrHandlePool.Length ?
                         TypeRegistry.StrHandlePool[typeHandle.IntValue] :
                         $"${typeHandle.IntValue}"
@@ -43,20 +41,20 @@ namespace Slim.Core
         throw new SlimException(StringConsts.ArraysOverMaxDimsError.Args(ar, MaxDimCount));
 
 
-      var descr = new StringBuilder();
-      descr.Append(th);
-      descr.Append('|');//separator char
+      var descriptorBuilder = new StringBuilder();
+      descriptorBuilder.Append(typeHandleStringValue);
+      descriptorBuilder.Append('|');//separator char
 
       for (var i = 0; i < ar; i++)
       {
-        descr.Append(array.GetLowerBound(i));
-        descr.Append('~');
-        descr.Append(array.GetUpperBound(i));
+        descriptorBuilder.Append(array.GetLowerBound(i));
+        descriptorBuilder.Append('~');
+        descriptorBuilder.Append(array.GetUpperBound(i));
         if (i < ar - 1)
-          descr.Append(',');
+          descriptorBuilder.Append(',');
       }
 
-      return descr.ToString();
+      return descriptorBuilder.ToString();
     }
 
     //20140702 DLat+Dkh parsing speed optimization
@@ -117,7 +115,7 @@ namespace Slim.Core
         if (total > MaxElmCount)
           throw new SlimException(StringConsts.ArraysOverMaxElmError.Args(total, MaxElmCount));
 
-        instance = Array.CreateInstance(type.GetElementType(), lengths, lowerBounds);
+        instance = Array.CreateInstance(type.GetElementType() ?? throw new InvalidOperationException(), lengths, lowerBounds);
       }
       catch (Exception error)
       {

@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -63,12 +61,12 @@ namespace Slim.Core
 
       if (td.IsArray) //need to write array dimensions
       {
-        writer.Write(Arrays.ArrayToDescriptor((Array) instance, type, typeHandle));
+        writer.Write(Arrays.ArrayToDescriptor((Array)instance, type, typeHandle));
       }
 
 
       {
-        #warning This code block is meant to compensate discrepancies between net451 and coreclr behavior. This code needs to be removed when removing net 451 support 
+#warning This code block is meant to compensate discrepancies between net451 and coreclr behavior. This code needs to be removed when removing net 451 support 
         if (type.IsGenericType &&
             type.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
             type.GetGenericArguments()[0] == typeof(string))
@@ -85,9 +83,9 @@ namespace Slim.Core
               var resize = type.GetMethod("Resize",
                 BindingFlags.Instance | BindingFlags.NonPublic,
                 null,
-                new[] {typeof(int), typeof(bool)},
+                new[] { typeof(int), typeof(bool) },
                 new ParameterModifier[] { });
-              resize.Invoke(instance, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {length, true},
+              resize.Invoke(instance, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { length, true },
                 CultureInfo.InvariantCulture);
             }
           }
@@ -110,7 +108,7 @@ namespace Slim.Core
         if (wa != null)
           wa(writer, instance);
         else
-          this.Serialize(writer, registry, refs, instance, streamingContext, serializationForFrameWork);
+          Serialize(writer, registry, refs, instance, streamingContext, serializationForFrameWork);
       }
       else
       if (mh.IsInlinedRefType)
@@ -119,26 +117,24 @@ namespace Slim.Core
         if (wa != null)
           wa(writer, instance);
         else
-          throw new SlimException($"Internal error {nameof(WriteRefMetaHandle)}: no write action for ref type, but ref mhandle is inlined");
+          throw new SlimException($"Internal error {nameof(WriteRefMetaHandle)}: no write action for ref type, but ref metaHandle is inlined");
       }
     }
 
     public object ReadRefMetaHandle(SlimReader reader, TypeRegistry registry, RefPool refs, StreamingContext streamingContext)
     {
-      var mh = reader.ReadMetaHandle();
+      var metaHandle = reader.ReadMetaHandle();
 
-      if (mh.IsInlinedValueType)
+      if (metaHandle.IsInlinedValueType)
       {
-        var tboxed = registry.GetOrAddType(mh.Metadata.Value);//adding this type to registry if it is not there yet
+        // ReSharper disable once PossibleInvalidOperationException
+        var typeBoxed = registry.GetOrAddType(metaHandle.Metadata.Value);//adding this type to registry if it is not there yet
 
-        var ra = Format.GetReadActionForType(tboxed);
-        if (ra != null)
-          return ra(reader);
-        else
-          return this.Deserialize(reader, registry, refs, streamingContext);
+        var ra = Format.GetReadActionForType(typeBoxed);
+        return ra != null ? ra(reader) : Deserialize(reader, registry, refs, streamingContext);
       }
 
-      return refs.HandleToReference(mh, registry, Format, reader);
+      return refs.HandleToReference(metaHandle, registry, Format, reader);
     }
 
     public object Deserialize(SlimReader reader, TypeRegistry registry, RefPool refs, StreamingContext streamingContext, Type valueType = null)
@@ -151,26 +147,26 @@ namespace Slim.Core
       var type = valueType;
       if (type == null)
       {
-        var thandle = reader.ReadVarIntStr();
-        if (thandle.StringValue != null)//need to search for possible array descriptor
+        var typeHandle = reader.ReadVarIntStr();
+        if (typeHandle.StringValue != null)//need to search for possible array descriptor
         {
-          var ip = thandle.StringValue.IndexOf('|');//array descriptor start
+          var ip = typeHandle.StringValue.IndexOf('|');//array descriptor start
           if (ip > 0)
           {
-            var typeName = thandle.StringValue.Substring(0, ip);
+            var typeName = typeHandle.StringValue.Substring(0, ip);
             if (TypeRegistry.IsNullHandle(typeName)) return null;
             type = registry[typeName];
           }
           else
           {
-            if (TypeRegistry.IsNullHandle(thandle)) return null;
-            type = registry.GetOrAddType(thandle);
+            if (TypeRegistry.IsNullHandle(typeHandle)) return null;
+            type = registry.GetOrAddType(typeHandle);
           }
         }
         else
         {
-          if (TypeRegistry.IsNullHandle(thandle)) return null;
-          type = registry.GetOrAddType(thandle);
+          if (TypeRegistry.IsNullHandle(typeHandle)) return null;
+          type = registry.GetOrAddType(typeHandle);
         }
       }
 
@@ -182,11 +178,9 @@ namespace Slim.Core
 
       var td = GetTypeDescriptorCachedOrMake(type);
 
-      object instance;
-      if (td.IsArray)
-        instance = Arrays.DescriptorToArray(reader.ReadString(), type);
-      else
-        instance = SerializationUtils.MakeNewObjectInstance(type);
+      var instance = td.IsArray ? 
+                           Arrays.DescriptorToArray(reader.ReadString(), type) : 
+                           SerializationUtils.MakeNewObjectInstance(type);
 
       if (root)
         if (!type.IsValueType)//if this is a reference type
@@ -207,13 +201,13 @@ namespace Slim.Core
 
       var type = instance.GetType();
 
-      reader.ReadVarIntStr();//skip type as we already know it from prior-allocated metahandle
+      reader.ReadVarIntStr();//skip type as we already know it from prior-allocated metaHandle
 
 
       var td = GetTypeDescriptorCachedOrMake(type);
 
       if (type.IsArray)
-        reader.ReadString();//skip array descriptor as we already know it from prior-allocated metahandle
+        reader.ReadString();//skip array descriptor as we already know it from prior-allocated metaHandle
 
       td.DeserializeInstance(reader, registry, refs, ref instance, streamingContext);
     }

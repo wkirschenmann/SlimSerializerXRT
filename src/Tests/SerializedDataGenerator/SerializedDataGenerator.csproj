@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net451</TargetFrameworks>
+    <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
+    <Authors>wkirschenmann</Authors>
+    <Company>ANEO</Company>
+    <Description>Contains data used to test the SlimSerializer</Description>
+    <Copyright>ANEO</Copyright>
+    <RepositoryUrl>https://github.com/wkirschenmann/azos</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <WarningLevel>5</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>Exe</OutputType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <StartAction>Program</StartAction>
+    <StartWorkingDirectory>$(SolutionDir)Tests</StartWorkingDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
+    <DefineConstants>NET451</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
+    <DefineConstants>NETCORE21</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Slim\Slim.csproj" />
+    <ProjectReference Include="..\TestData\TestData.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild_FW" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='net451'">
+    <Exec Command="cd $(TargetDir)" />
+    <Exec Command="$(TargetDir)$(TargetFileName)" />
+    <Exec Command="copy /Y *.slim $(SolutionDir)Tests\SlimTests\" />
+  </Target>
+  
+  <Target Name="PostBuild_Core" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)'=='netcoreapp2.1'">
+    <Exec Command="cd $(TargetDir)" />
+    <Exec Command="dotnet $(TargetDir)$(TargetFileName)" />
+    <Exec Command="copy /Y *.slim $(SolutionDir)Tests\SlimTests\" />
+  </Target>
+
+</Project>

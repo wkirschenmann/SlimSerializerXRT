@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -8,10 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Linq.Expressions;
-
 using System.Threading;
 
 namespace Slim.Core
@@ -31,7 +28,7 @@ namespace Slim.Core
       Contract.Requires(!(type is null), $"{nameof(type)} is not null");
       return type.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance,
                                         null,
-                                        new Type[] { typeof(SerializationInfo), typeof(StreamingContext) },
+                                        new[] { typeof(SerializationInfo), typeof(StreamingContext) },
                                         null);
     }
 
@@ -120,24 +117,24 @@ namespace Slim.Core
     /// <summary>
     /// Finds methods decorated by [On(De)Seriali(zing/zed)]
     /// </summary>
-    /// <param name="t">A type whose methods to search</param>
-    /// <param name="atype">Attribute type to search</param>
+    /// <param name="type">A type whose methods to search</param>
+    /// <param name="attributeType">Attribute type to search</param>
     /// <returns>List(MethodInfo) that qualifies or NULL if none found</returns>
-    public static List<MethodInfo> FindSerializationAttributedMethods(Type t, Type atype)
+    public static List<MethodInfo> FindSerializationAttributedMethods(Type type, Type attributeType)
     {
       var list = new List<MethodInfo>();
 
-      while (t != null && t != typeof(object))
+      while (type != null && type != typeof(object))
       {
-        var methods = t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Where(mi => Attribute.IsDefined(mi, atype) &&
+        var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Where(mi => Attribute.IsDefined(mi, attributeType) &&
                                         mi.ReturnType == typeof(void) &&
                                         mi.GetParameters().Length == 1 &&
                                         mi.GetParameters()[0].ParameterType == typeof(StreamingContext));
         foreach (var m in methods)
           list.Add(m);
 
-        t = t.BaseType;
+        type = type.BaseType;
       }
 
       if (list.Count > 0)
@@ -159,10 +156,10 @@ namespace Slim.Core
     {
       if (instance == null) return;
 
-      for (var i = 0; i < methods.Count; i++)
+      foreach (var method in methods)
         try
         {
-          methods[i].Invoke(instance, new object[] { streamingContext });
+          method.Invoke(instance, new object[] { streamingContext });
         }
         catch (TargetInvocationException ie)
         {  //20131219 DKh
@@ -189,8 +186,8 @@ namespace Slim.Core
       }
 
 
-      var idxs = new int[rank];
-      DoDimensionGetValue(arr, idxs, 0, each);
+      var indexes = new int[rank];
+      DoDimensionGetValue(arr, indexes, 0, each);
     }
 
     /// <summary>
@@ -212,7 +209,7 @@ namespace Slim.Core
 
 
       var idxs = new int[rank];
-      DoDimensionSetValue<T>(arr, idxs, 0, each);
+      DoDimensionSetValue(arr, idxs, 0, each);
     }
 
 

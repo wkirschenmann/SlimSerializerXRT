@@ -5,7 +5,7 @@
 namespace Slim.Core
 {
   /// <summary>
-  /// Denotes ser/deser operations
+  /// Denotes ser/deserialization operations
   /// </summary>
   public enum SerializationOperation
   {

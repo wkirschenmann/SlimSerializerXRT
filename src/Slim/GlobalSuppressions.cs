@@ -6,10 +6,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-[assembly:CLSCompliant(true)]
+[assembly: CLSCompliant(true)]
 [assembly: SuppressMessage("Performance", "CA1825:Avoid zero-length array allocations", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.TypeSchema.Serialize(Slim.Core.SlimWriter,Slim.Core.TypeRegistry,Slim.Core.RefPool,System.Object,System.Runtime.Serialization.StreamingContext,System.Boolean,System.Type)")]
 [assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.TypeSchema.DeserializeRootOrInner(Slim.Core.SlimReader,Slim.Core.TypeRegistry,Slim.Core.RefPool,System.Runtime.Serialization.StreamingContext,System.Boolean,System.Type)~System.Object")]
 [assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.Arrays.DescriptorToArray(System.String,System.Type)~System.Array")]
 [assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.TypeRegistry.GetTypeHandle(System.Type,System.Boolean)~Slim.Core.VarIntStr")]
 [assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.RefPool.HandleToReference(Slim.Core.MetaHandle,Slim.Core.TypeRegistry,Slim.Core.SlimFormat,Slim.Core.SlimReader)~System.Object")]
 [assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "Fix not compatible with netFW451", Scope = "member", Target = "~M:Slim.Core.VarIntStr.GetHashCode~System.Int32")]
+[assembly: SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>", Scope = "type", Target = "~T:Slim.Core.ReadingStreamer")]

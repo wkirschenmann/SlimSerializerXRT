@@ -1,6 +1,4 @@
 /*<FILE_LICENSE>
- * Azos (A to Z Application Operating System) Framework
- * The A to Z Foundation (a.k.a. Azist) licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 </FILE_LICENSE>*/
 
@@ -8,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Linq;
-using System.Runtime.Serialization;
 
 namespace Slim.Core
 {
@@ -63,7 +59,7 @@ namespace Slim.Core
     #region .ctors
 
     private struct NullHandleFakeType { }
-    
+
 
 
     /// <summary>
@@ -114,7 +110,7 @@ namespace Slim.Core
 
         if (handle.StringValue == null)
         {
-          var idx = (int) handle.IntValue;
+          var idx = (int)handle.IntValue;
           if (idx < m_List.Count)
             return m_List[idx];
           throw new SlimException($"TypeRegistry : handle value \"{handle}\" is unknown.");
@@ -123,17 +119,17 @@ namespace Slim.Core
         if (!_sTypes.TryGetValue(handle.StringValue, out var result))
         {
           result = Type.GetType(handle.StringValue, true);
-          var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal) {[handle.StringValue] = result};
+          var dict = new Dictionary<string, Type>(_sTypes, StringComparer.Ordinal) { [handle.StringValue] = result };
           System.Threading.Thread.MemoryBarrier();
           _sTypes = dict; //atomic
         }
 
-        GetTypeIndex(result, out var added);
+        GetTypeIndex(result, out _);
         return result;
       }
-      catch(Exception e)
+      catch (Exception e)
       {
-        throw new SlimException("TypeRegistry[handle] is invalid: " + handle,e);
+        throw new SlimException("TypeRegistry[handle] is invalid: " + handle, e);
       }
     }
 
@@ -168,12 +164,12 @@ namespace Slim.Core
             _sTypes = dict;//atomic
           }
 
-          GetTypeIndex(result, out var added);
+          GetTypeIndex(result, out _);
           return result;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-          throw new SlimException("TypeRegistry[handle] is invalid: " + handle,e);
+          throw new SlimException("TypeRegistry[handle] is invalid: " + handle, e);
         }
       }
     }
@@ -198,7 +194,7 @@ namespace Slim.Core
     #endregion
 
     #region Public
-    
+
     /// <summary>
     /// Returns a VarIntStr with the type index formatted as handle if type exists in registry, or fully qualified type name otherwise
     /// </summary>
@@ -232,11 +228,11 @@ namespace Slim.Core
 
       var tn = t.FullName;
       var len = tn.Length;
-      var csum = (((byte)tn[0]) << 16) |
+      var cSum = (((byte)tn[0]) << 16) |
                  (((byte)tn[len - 1]) << 8) |
                  (len & 0xff);
 
-      CSum += (ulong)csum; //unchecked is not needed as there is never going to be> 4,000,000,000 types in registry
+      CSum += (ulong)cSum; //unchecked is not needed as there is never going to be> 4,000,000,000 types in registry
       return idx;
     }
 
