@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net451;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
     <Authors>wkirschenmann</Authors>
     <Company>ANEO</Company>
-    <Description>Contains data used to test the SlimSerializer</Description>
+    <Description>Tests for the SlimSerializer</Description>
     <Copyright>ANEO</Copyright>
-    <RepositoryUrl>https://github.com/wkirschenmann/azos</RepositoryUrl>
+    <RepositoryUrl>https://github.com/wkirschenmann/SlimSerializerXRT</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -57,8 +57,8 @@
     <DefineConstants>NET451</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.1'">
-    <DefineConstants>NETCORE21</DefineConstants>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
+    <DefineConstants>NET50</DefineConstants>
   </PropertyGroup>
 
 </Project>

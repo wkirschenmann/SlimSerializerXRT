@@ -15,9 +15,9 @@ namespace SlimTests
 #if NET451    
     public void MyDataSetFrameworkSerializationTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void MyDataSetCoreSerializationTest()
-#endif //NETCORE21
+#endif //NET50
     {
       byte[] serialized;
       using (var stream = new MemoryStream())
@@ -39,9 +39,9 @@ namespace SlimTests
 #if NET451    
     public void MyDataSetFrameworkDeserializationFromFrameworkTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void MyDataSetCoreDeserializationFromFrameworkTest()
-#endif //NETCORE21
+#endif //NET50
     {
       object res;
       using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromFramework))
@@ -57,9 +57,9 @@ namespace SlimTests
 #if NET451    
     public void MyDataSetFrameworkDeserializationFromCoreTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void MyDataSetCoreDeserializationFromCoreTest()
-#endif //NETCORE21
+#endif //NET50
     {
       object res;
       using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.MyDataSetFromCore))
@@ -74,9 +74,9 @@ namespace SlimTests
 #if NET451    
     public void AllTypesDataFrameworkSerializationTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void AllTypesDataCoreSerializationTest()
-#endif //NETCORE21
+#endif //NET50
     {
       byte[] serialized;
       using (var stream = new MemoryStream())
@@ -98,9 +98,9 @@ namespace SlimTests
 #if NET451    
     public void AllTypesDataFrameworkDeserializationFromFrameworkTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void AllTypesDataCoreDeserializationFromFrameworkTest()
-#endif //NETCORE21
+#endif //NET50
     {
       object res;
       using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromFramework))
@@ -116,9 +116,9 @@ namespace SlimTests
 #if NET451    
     public void AllTypesDataFrameworkDeserializationFromCoreTest()
 #endif //NET451
-#if NETCORE21
+#if NET50
     public void AllTypesDataCoreDeserializationFromCoreTest()
-#endif //NETCORE21
+#endif //NET50
     {
       object res;
       using (var stream = File.OpenRead(SerializedDataGenerator.Filenames.AllTypesDataFromCore))

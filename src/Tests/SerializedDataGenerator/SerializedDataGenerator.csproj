@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net451</TargetFrameworks>
+    <TargetFrameworks>net5.0;net451</TargetFrameworks>
     <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
     <Authors>wkirschenmann</Authors>
     <Company>ANEO</Company>
-    <Description>Contains data used to test the SlimSerializer</Description>
+    <Description>Generates the data files used by the Slimserializer tests</Description>
     <Copyright>ANEO</Copyright>
-    <RepositoryUrl>https://github.com/wkirschenmann/azos</RepositoryUrl>
+    <RepositoryUrl>https://github.com/wkirschenmann/SlimSerializerXRT</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
