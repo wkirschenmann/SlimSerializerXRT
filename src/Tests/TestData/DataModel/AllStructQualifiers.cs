@@ -21,18 +21,12 @@ namespace TestData.DataModel
         ArrayValue[i] = initializer(ran);
       }
 
-      if (ran.NextDouble() > 0.5)
-      {
-        BoxedValue = initializer(ran);
-      }
+      BoxedValue = ran.NextDouble() > 0.5 ? initializer(ran) : new T?();
 
       BoxedArrayValue = new T?[ran.Next(1, 512)];
       for (var i = 0; i < BoxedArrayValue.Length; ++i)
       {
-        if (ran.NextDouble() > 0.5)
-        {
-          BoxedArrayValue[i] = initializer(ran);
-        }
+        BoxedArrayValue[i] = ran.NextDouble() > 0.5 ? initializer(ran) : new T?();
       }
     }
     public bool Equals(AllStructQualifiers<T> other)

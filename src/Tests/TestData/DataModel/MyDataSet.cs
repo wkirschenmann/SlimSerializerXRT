@@ -7,7 +7,7 @@ namespace TestData.DataModel
   [Serializable]
   public class MyDataSet : IEquatable<MyDataSet>
   {
-    internal static MyDataSet InitData1()
+    internal static MyDataSet InitData()
     {
       var output = new MyDataSet()
       {

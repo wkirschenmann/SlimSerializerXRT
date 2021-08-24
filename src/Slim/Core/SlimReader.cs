@@ -25,7 +25,7 @@ namespace Slim.Core
       var has = ReadBool();
 
       if (has) return ReadBool();
-
+      
       return null;
     }
 

@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using TestData.DataModel;
@@ -6,6 +12,31 @@ using Assert = NUnit.Framework.Assert;
 
 namespace SlimTests
 {
+  public class NullableInitOnlyTests
+  {
+    public Nullable<int> data;
+
+    //void Deserialize(TypeSchema       pSchema,
+    //                 SlimReader       pReader,
+    //                 TypeRegistry     pTReg,
+    //                 RefPool          pRefs,
+    //                 ref object           pInstance,
+    //                 StreamingContext pStreamingContext)
+    //{
+    //  Type instance;
+
+    //  instance = (Type)pInstance;
+
+
+    //}
+
+    static void InitWithReflection()
+    {
+
+    }
+
+  }
+
   public class SerializerTests
   {
     private static readonly Slim.SlimSerializer Serializer = new Slim.SlimSerializer() {SerializeForFramework = true};

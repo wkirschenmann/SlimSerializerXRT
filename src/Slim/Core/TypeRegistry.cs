@@ -215,7 +215,6 @@ namespace Slim.Core
 
     }
 
-
     #endregion
 
     #region .pvt .impl

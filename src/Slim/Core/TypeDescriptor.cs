@@ -19,11 +19,12 @@ namespace Slim.Core
 
       Schema = schema;
       Format = schema.Format;
-      Type = type;
+      Type   = type;
 
-      IsPrimitive = Format.IsTypeSupported(type);
-      IsArray = type.IsArray;
+      IsPrimitive      = Format.IsTypeSupported(type);
+      IsArray          = type.IsArray;
       IsPrimitiveArray = IsArray && IsPrimitive;
+      IsNullable       = Nullable.GetUnderlyingType(type) != null;
 
       if (!IsArray)
         Fields = SerializationUtils.GetSerializableFields(type).ToArray();
@@ -36,38 +37,44 @@ namespace Slim.Core
       }
       else
       {
-        Serialize = MakeSerialize();
+        Serialize   = MakeSerialize();
         Deserialize = MakeDeserialize();
       }
 
       //Query for "On..." family of attributes
-      MethodsOnSerializing = FindAttributedMethods(typeof(OnSerializingAttribute));
-      MethodsOnSerialized = FindAttributedMethods(typeof(OnSerializedAttribute));
+      MethodsOnSerializing   = FindAttributedMethods(typeof(OnSerializingAttribute));
+      MethodsOnSerialized    = FindAttributedMethods(typeof(OnSerializedAttribute));
       MethodsOnDeserializing = FindAttributedMethods(typeof(OnDeserializingAttribute));
-      MethodsOnDeserialized = FindAttributedMethods(typeof(OnDeserializedAttribute));
+      MethodsOnDeserialized  = FindAttributedMethods(typeof(OnDeserializedAttribute));
 
     }
 
-    public readonly TypeSchema Schema;
-    public SlimFormat Format { get; }
-    public readonly Type Type;
+    public readonly TypeSchema  Schema;
+    public          SlimFormat  Format { get; }
+    public readonly Type        Type;
     public readonly FieldInfo[] Fields;
-    public readonly bool CustomIsSerializable;
-    public readonly bool IsPrimitive;
-    public readonly bool IsArray;
-    public readonly bool IsPrimitiveArray;
+    public readonly bool        CustomIsSerializable;
+    public readonly bool        IsPrimitive;
+    public readonly bool        IsArray;
+    public readonly bool        IsNullable;
+    public readonly bool        IsPrimitiveArray;
 
-    private DynSerialize Serialize { get; }
+    private DynSerialize   Serialize   { get; }
     private DynDeserialize Deserialize { get; }
 
 
-    private List<MethodInfo> MethodsOnSerializing { get; }
-    private List<MethodInfo> MethodsOnSerialized { get; }
+    private List<MethodInfo> MethodsOnSerializing   { get; }
+    private List<MethodInfo> MethodsOnSerialized    { get; }
     private List<MethodInfo> MethodsOnDeserializing { get; }
-    private List<MethodInfo> MethodsOnDeserialized { get; }
+    private List<MethodInfo> MethodsOnDeserialized  { get; }
 
 
-    public void SerializeInstance(SlimWriter writer, TypeRegistry registry, RefPool refs, object instance, StreamingContext streamingContext, bool serializationForFrameWork = false)
+    public void SerializeInstance(SlimWriter       writer,
+                                  TypeRegistry     registry,
+                                  RefPool          refs,
+                                  object           instance,
+                                  StreamingContext streamingContext,
+                                  bool             serializationForFrameWork = false)
     {
       if (MethodsOnSerializing != null)
         InvokeAttributedMethods(MethodsOnSerializing, instance, streamingContext);
@@ -78,7 +85,7 @@ namespace Slim.Core
       }
       else
       {
-        var isz = instance as ISerializable;
+        var isz  = instance as ISerializable;
         var info = new SerializationInfo(Type, new FormatterConverter());
         isz.GetObjectData(info, streamingContext);
 
@@ -89,7 +96,11 @@ namespace Slim.Core
         InvokeAttributedMethods(MethodsOnSerialized, instance, streamingContext);
     }
 
-    public void DeserializeInstance(SlimReader reader, TypeRegistry registry, RefPool refs, ref object instance, StreamingContext streamingContext)
+    public void DeserializeInstance(SlimReader       reader,
+                                    TypeRegistry     registry,
+                                    RefPool          refs,
+                                    ref object       instance,
+                                    StreamingContext streamingContext)
     {
       if (MethodsOnDeserializing != null)
         InvokeAttributedMethods(MethodsOnDeserializing, instance, streamingContext);
@@ -105,7 +116,7 @@ namespace Slim.Core
         //20171223 DKh Handle SerializationInfo.SetType() redefinition of serialized type
         if (instance.GetType() != info.ObjectType)
         {
-          instance = FormatterServices.GetUninitializedObject(info.ObjectType);//ref instance is re-allocated with a different type
+          instance = FormatterServices.GetUninitializedObject(info.ObjectType); //ref instance is re-allocated with a different type
         }
 
         refs.AddISerializableFixup(instance, info);
@@ -141,12 +152,12 @@ namespace Slim.Core
     {
       var walkArrayWrite = typeof(TypeDescriptor).GetMethod(nameof(WalkArrayWrite), BindingFlags.NonPublic | BindingFlags.Static);
 
-      var pSchema = Expression.Parameter(typeof(TypeSchema));
-      var pWriter = Expression.Parameter(typeof(SlimWriter));
-      var pTReg = Expression.Parameter(typeof(TypeRegistry));
-      var pRefs = Expression.Parameter(typeof(RefPool));
-      var pInstance = Expression.Parameter(typeof(object));
-      var pStreamingContext = Expression.Parameter(typeof(StreamingContext));
+      var pSchema                = Expression.Parameter(typeof(TypeSchema));
+      var pWriter                = Expression.Parameter(typeof(SlimWriter));
+      var pTReg                  = Expression.Parameter(typeof(TypeRegistry));
+      var pRefs                  = Expression.Parameter(typeof(RefPool));
+      var pInstance              = Expression.Parameter(typeof(object));
+      var pStreamingContext      = Expression.Parameter(typeof(StreamingContext));
       var pSerializeForFramework = Expression.Parameter(typeof(bool));
 
       var expressions = new List<Expression>();
@@ -159,119 +170,159 @@ namespace Slim.Core
       if (IsPrimitive)
       {
         expressions.Add(Expression.Call(pWriter,
-          Format.GetWriteMethodForType(Type),
-          instance));
+                                        Format.GetWriteMethodForType(Type),
+                                        instance));
       }
       else if (IsArray)
       {
         var elmType = Type.GetElementType();
 
-        if (Format.IsTypeSupported(elmType))//array element type
-        {  //spool whole array into writer using primitive types
+        if (Format.IsTypeSupported(elmType)) //array element type
+        {                                    //spool whole array into writer using primitive types
 
           var pElement = Expression.Parameter(typeof(object));
           expressions.Add(Expression.Call(walkArrayWrite,
-              instance,
-              Expression.Lambda(Expression.Call(pWriter,
-                Format.GetWriteMethodForType(elmType),
-                Expression.Convert(pElement, elmType)), pElement)
-            )
-          );
+                                          instance,
+                                          Expression.Lambda(Expression.Call(pWriter,
+                                                                            Format.GetWriteMethodForType(elmType),
+                                                                            Expression.Convert(pElement, elmType)), pElement)
+                                         )
+                         );
         }
         else
-        {  //spool whole array using TypeSchema because objects may change type
+        { //spool whole array using TypeSchema because objects may change type
           var pElement = Expression.Parameter(typeof(object));
 
-          if (!elmType.IsValueType)//reference type
+          if (!elmType.IsValueType) //reference type
             expressions.Add(Expression.Call(walkArrayWrite,
-                instance,
-                Expression.Lambda(Expression.Call(pSchema,
-                    typeof(TypeSchema).GetMethod(nameof(TypeSchema.WriteRefMetaHandle)),
-                    pWriter,
-                    pTReg,
-                    pRefs,
-                    Expression.Convert(pElement, typeof(object)),
-                    pStreamingContext,
-                    pSerializeForFramework),
-                  pElement)
-              )
-            );
+                                            instance,
+                                            Expression.Lambda(Expression.Call(pSchema,
+                                                                              typeof(TypeSchema).GetMethod(nameof(TypeSchema
+                                                                                                                   .WriteRefMetaHandle)),
+                                                                              pWriter,
+                                                                              pTReg,
+                                                                              pRefs,
+                                                                              Expression.Convert(pElement, typeof(object)),
+                                                                              pStreamingContext,
+                                                                              pSerializeForFramework),
+                                                              pElement)
+                                           )
+                           );
           else
             expressions.Add(Expression.Call(walkArrayWrite,
-                instance,
-                Expression.Lambda(Expression.Call(pSchema,
-                  typeof(TypeSchema).GetMethod(nameof(TypeSchema.Serialize)),
-                  pWriter,
-                  pTReg,
-                  pRefs,
-                  pElement,
-                  pStreamingContext,
-                  pSerializeForFramework,
-                  Expression.Constant(elmType)//valueType
-                ), pElement)
-              )
-            );
+                                            instance,
+                                            Expression.Lambda(Expression.Call(pSchema,
+                                                                              typeof(TypeSchema)
+                                                                               .GetMethod(nameof(TypeSchema.Serialize)),
+                                                                              pWriter,
+                                                                              pTReg,
+                                                                              pRefs,
+                                                                              pElement,
+                                                                              pStreamingContext,
+                                                                              pSerializeForFramework,
+                                                                              Expression.Constant(elmType) //valueType
+                                                                             ), pElement)
+                                           )
+                           );
         }
+      }
+      else if (IsNullable)
+      {
+        if (Fields.Length != 2) throw new SlimException("Nullable object must contains exactly 2 fields.");
+
+        var hasValueField = Fields.Single(fi => fi.Name == "hasValue");
+        var hasValueExpr  = Expression.Field(instance, hasValueField);
+
+        var writeHasValueExpr = Expression.Call(pWriter,
+                                              Format.GetWriteMethodForType(typeof(bool)),
+                                          hasValueExpr);
+        var valueField = Fields.Single(fi => fi.Name == "value");
+
+        var writeValueExpr = BuildFieldSerilizationExpr(pWriter, instance, valueField, pSchema, pTReg, pRefs, pStreamingContext, pSerializeForFramework);
+
+        var testExpr = Expression.IfThenElse(hasValueExpr, Expression.Block(writeHasValueExpr, writeValueExpr), writeHasValueExpr);
+        
+        expressions.Add(testExpr);
       }
       else
       {
         foreach (var field in Fields)
         {
           Expression expr = null;
-          var t = field.FieldType;
 
-          if (Format.IsTypeSupported(t))
-          {
-            expr = Expression.Call(pWriter,
-              Format.GetWriteMethodForType(t),
-              Expression.Field(instance, field));
-          }
-          else
-          if (t.IsEnum)
-          {
-            expr = Expression.Call(pWriter,
-              Format.GetWriteMethodForType(typeof(int)),
-              Expression.Convert(Expression.Field(instance, field), typeof(int)));
-
-          }
-          else // complex type ->  struct or reference
-          {
-            if (!t.IsValueType)//reference type -> write metaHandle
-            {
-              expr = Expression.Call(pSchema,
-                typeof(TypeSchema).GetMethod(nameof(TypeSchema.WriteRefMetaHandle)),
-                pWriter,
-                pTReg,
-                pRefs,
-                Expression.Convert(Expression.Field(instance, field), typeof(object)),
-                pStreamingContext,
-                pSerializeForFramework);
-            }
-            else
-              expr = Expression.Call(pSchema,
-                typeof(TypeSchema).GetMethod(nameof(TypeSchema.Serialize)),
-                pWriter,
-                pTReg,
-                pRefs,
-                Expression.Convert(Expression.Field(instance, field), typeof(object)),
-                pStreamingContext,
-                pSerializeForFramework,
-                Expression.Constant(field.FieldType));//valueType
-
-          }
+          expr = BuildFieldSerilizationExpr(pWriter, instance, field, pSchema, pTReg, pRefs, pStreamingContext, pSerializeForFramework);
 
           expressions.Add(expr);
-        }//foreach
+        } //foreach
       }
 
-      var body = Expression.Block(new ParameterExpression[] { instance }, expressions);
+      var body = Expression.Block(new ParameterExpression[] {instance}, expressions);
 
-      return Expression.Lambda<DynSerialize>(body, pSchema, pWriter, pTReg, pRefs, pInstance, pStreamingContext, pSerializeForFramework).Compile();
+      return Expression
+            .Lambda<DynSerialize>(body, pSchema, pWriter, pTReg, pRefs, pInstance, pStreamingContext, pSerializeForFramework)
+            .Compile();
     }
 
-    private void SerializeInfo(SlimWriter writer, TypeRegistry registry, RefPool refs, SerializationInfo info, StreamingContext streamingContext, bool serializationForFrameWork)
+    private Expression BuildFieldSerilizationExpr(ParameterExpression pWriter,
+                                      ParameterExpression instance,
+                                      FieldInfo           field,
+                                      ParameterExpression pSchema,
+                                      ParameterExpression pTReg,
+                                      ParameterExpression pRefs,
+                                      ParameterExpression pStreamingContext,
+                                      ParameterExpression pSerializeForFramework)
     {
-      writer.Write(registry.GetTypeHandle(info.ObjectType, serializationForFrameWork));//20171223 DKh
+      Type t = field.FieldType;
+      
+      Expression expr;
+      if (Format.IsTypeSupported(t))
+      {
+        expr = Expression.Call(pWriter,
+                               Format.GetWriteMethodForType(t),
+                               Expression.Field(instance, field));
+      }
+      else if (t.IsEnum)
+      {
+        expr = Expression.Call(pWriter,
+                               Format.GetWriteMethodForType(typeof(int)),
+                               Expression.Convert(Expression.Field(instance, field), typeof(int)));
+      }
+      else // complex type ->  struct or reference
+      {
+        if (!t.IsValueType) //reference type -> write metaHandle
+        {
+          expr = Expression.Call(pSchema,
+                                 typeof(TypeSchema).GetMethod(nameof(TypeSchema.WriteRefMetaHandle)),
+                                 pWriter,
+                                 pTReg,
+                                 pRefs,
+                                 Expression.Convert(Expression.Field(instance, field), typeof(object)),
+                                 pStreamingContext,
+                                 pSerializeForFramework);
+        }
+        else
+          expr = Expression.Call(pSchema,
+                                 typeof(TypeSchema).GetMethod(nameof(TypeSchema.Serialize)),
+                                 pWriter,
+                                 pTReg,
+                                 pRefs,
+                                 Expression.Convert(Expression.Field(instance, field), typeof(object)),
+                                 pStreamingContext,
+                                 pSerializeForFramework,
+                                 Expression.Constant(field.FieldType)); //valueType
+      }
+
+      return expr;
+    }
+
+    private void SerializeInfo(SlimWriter        writer,
+                               TypeRegistry      registry,
+                               RefPool           refs,
+                               SerializationInfo info,
+                               StreamingContext  streamingContext,
+                               bool              serializationForFrameWork)
+    {
+      writer.Write(registry.GetTypeHandle(info.ObjectType, serializationForFrameWork)); //20171223 DKh
       writer.Write(info.MemberCount);
 
       var serializationInfoEnumerator = info.GetEnumerator();
@@ -283,12 +334,15 @@ namespace Slim.Core
       }
     }
 
-    private SerializationInfo DeserializeInfo(SlimReader reader, TypeRegistry registry, RefPool refs, StreamingContext streamingContext)
+    private SerializationInfo DeserializeInfo(SlimReader       reader,
+                                              TypeRegistry     registry,
+                                              RefPool          refs,
+                                              StreamingContext streamingContext)
     {
       //20171223 DKh
       var visInfo = reader.ReadVarIntStr();
-      var tInfo = registry.GetOrAddType(visInfo);
-      var info = new SerializationInfo(tInfo, new FormatterConverter());
+      var tInfo   = registry.GetOrAddType(visInfo);
+      var info    = new SerializationInfo(tInfo, new FormatterConverter());
 
       //20171223 DKh
       //var info = new SerializationInfo(Type, new FormatterConverter());
@@ -299,9 +353,9 @@ namespace Slim.Core
       {
         var name = reader.ReadString();
 
-        var vis = reader.ReadVarIntStr();
+        var vis  = reader.ReadVarIntStr();
         var type = registry.GetOrAddType(vis);
-        var obj = Schema.Deserialize(reader, registry, refs, streamingContext);
+        var obj  = Schema.Deserialize(reader, registry, refs, streamingContext);
 
         info.AddValue(name, obj, type);
       }
@@ -311,17 +365,17 @@ namespace Slim.Core
 
 
     //20130816 DKh refactored into SerializationUtils
-    private static void WalkArrayWrite(Array arr, Action<object> each) => SerializationUtils.WalkArrayWrite(arr, each);
-    private static void WalkArrayRead<T>(Array arr, Func<T> each) => SerializationUtils.WalkArrayRead<T>(arr, each);
+    private static void WalkArrayWrite(Array   arr, Action<object> each) => SerializationUtils.WalkArrayWrite(arr, each);
+    private static void WalkArrayRead<T>(Array arr, Func<T>        each) => SerializationUtils.WalkArrayRead<T>(arr, each);
 
 
     private DynDeserialize MakeDeserialize()
     {
-      var pSchema = Expression.Parameter(typeof(TypeSchema));
-      var pReader = Expression.Parameter(typeof(SlimReader));
-      var pTReg = Expression.Parameter(typeof(TypeRegistry));
-      var pRefs = Expression.Parameter(typeof(RefPool));
-      var pInstance = Expression.Parameter(typeof(object).MakeByRefType());
+      var pSchema           = Expression.Parameter(typeof(TypeSchema));
+      var pReader           = Expression.Parameter(typeof(SlimReader));
+      var pTReg             = Expression.Parameter(typeof(TypeRegistry));
+      var pRefs             = Expression.Parameter(typeof(RefPool));
+      var pInstance         = Expression.Parameter(typeof(object).MakeByRefType());
       var pStreamingContext = Expression.Parameter(typeof(StreamingContext));
 
       var expressions = new List<Expression>();
@@ -334,172 +388,200 @@ namespace Slim.Core
       if (IsPrimitive)
       {
         expressions.Add(Expression.Assign
-          (instance, Expression.Call(pReader, Format.GetReadMethodForType(Type)))
-        );
+                          (instance, Expression.Call(pReader, Format.GetReadMethodForType(Type)))
+                       );
 
       }
       else if (IsArray)
       {
         var elmType = Type.GetElementType();
-        var walkArrayRead = typeof(TypeDescriptor).GetMethod(nameof(WalkArrayRead), BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(elmType);
+        var walkArrayRead = typeof(TypeDescriptor).GetMethod(nameof(WalkArrayRead), BindingFlags.NonPublic | BindingFlags.Static)
+                                                  .MakeGenericMethod(elmType);
 
-        if (Format.IsTypeSupported(elmType))//array element type
+        if (Format.IsTypeSupported(elmType)) //array element type
         {
           //spool whole array from reader using primitive types
           expressions.Add(Expression.Call(walkArrayRead,
-              instance,
-              Expression.Lambda(Expression.Call(pReader, Format.GetReadMethodForType(elmType)))
-            )
-          );
+                                          instance,
+                                          Expression.Lambda(Expression.Call(pReader, Format.GetReadMethodForType(elmType)))
+                                         )
+                         );
         }
         else
-        {  //spool whole array using TypeSchema because objects may change type
-          if (!elmType.IsValueType)//reference type
+        {                           //spool whole array using TypeSchema because objects may change type
+          if (!elmType.IsValueType) //reference type
             expressions.Add(Expression.Call(walkArrayRead,
-                instance,
-                Expression.Lambda(
-                  Expression.Convert(
-                    Expression.Call(pSchema,
-                      typeof(TypeSchema).GetMethod(nameof(TypeSchema.ReadRefMetaHandle)),
-                      pReader,
-                      pTReg,
-                      pRefs,
-                      pStreamingContext),
-                    elmType
-                  )
-                )
-              )
-            );
+                                            instance,
+                                            Expression.Lambda(
+                                                              Expression.Convert(
+                                                                                 Expression.Call(pSchema,
+                                                                                                 typeof(TypeSchema)
+                                                                                                  .GetMethod(nameof(TypeSchema
+                                                                                                                     .ReadRefMetaHandle)),
+                                                                                                 pReader,
+                                                                                                 pTReg,
+                                                                                                 pRefs,
+                                                                                                 pStreamingContext),
+                                                                                 elmType
+                                                                                )
+                                                             )
+                                           )
+                           );
           else
             expressions.Add(Expression.Call(walkArrayRead,
-                instance,
-                Expression.Lambda(
-                  Expression.Convert(
-                    Expression.Call(pSchema,
-                      typeof(TypeSchema).GetMethod(nameof(TypeSchema.Deserialize)),
-                      pReader,
-                      pTReg,
-                      pRefs,
-                      pStreamingContext,
-                      Expression.Constant(elmType)),//valueType
-                    elmType
-                  )
-                )
-              )
-            );
+                                            instance,
+                                            Expression.Lambda(
+                                                              Expression.Convert(
+                                                                                 Expression.Call(pSchema,
+                                                                                                 typeof(TypeSchema)
+                                                                                                  .GetMethod(nameof(TypeSchema
+                                                                                                                     .Deserialize)),
+                                                                                                 pReader,
+                                                                                                 pTReg,
+                                                                                                 pRefs,
+                                                                                                 pStreamingContext,
+                                                                                                 Expression
+                                                                                                  .Constant(elmType)), //valueType
+                                                                                 elmType
+                                                                                )
+                                                             )
+                                           )
+                           );
         }
       }
-      else//loop through fields
+      else if (IsNullable)
+      {
+        if (Fields.Length != 2) throw new SlimException("Nullable object must contains exactly 2 fields.");
+        var hasValueField = Fields.Single(fi => fi.Name == "hasValue");
+        var valueField = Fields.Single(fi => fi.Name == "value");
+
+        var valuedConstructor = Type.GetConstructors().Single(ci => ci.GetParameters().Length == 1);
+
+        var buildDefaultExpr = Expression.New(Type);
+        
+        var buildValueExpr   = Expression.New(valuedConstructor, 
+                                              BuildFieldDeserializationExpression(valueField.FieldType, pReader, valueField, pSchema, pTReg, pRefs, pStreamingContext));
+
+        var testExpr = Expression.IfThenElse(Expression.Call(pReader, Format.GetReadMethodForType(typeof(bool))),
+                                                             Expression.Assign(instance, buildValueExpr),
+                                                             Expression.Assign(instance, buildDefaultExpr));
+        expressions.Add(testExpr);
+      }
+      else //loop through fields
       {
         foreach (var field in Fields)
         {
-          Expression expr = null;
-          var t = field.FieldType;
+          var        t = field.FieldType;
 
           Expression assignmentTargetExpression;
-          if (field.IsInitOnly)//readonly fields must be assigned using reflection
+          if (field.IsInitOnly) //readonly fields must be assigned using reflection
           {
             assignmentTargetExpression = Expression.Variable(t, "readonlyFieldValue");
           }
           else
             assignmentTargetExpression = Expression.Field(instance, field);
 
+          var assignementSourceExpression = BuildFieldDeserializationExpression(t, pReader, field, pSchema, pTReg, pRefs, pStreamingContext);
+          
+          Expression expr = Expression.Assign(
+                                              assignmentTargetExpression,
+                                              assignementSourceExpression
+                                             );
 
-          if (Format.IsTypeSupported(t))
+          if (assignmentTargetExpression is ParameterExpression expression) //readonly fields
           {
-            expr = Expression.Assign(
-              assignmentTargetExpression,
-              Expression.Call(pReader, Format.GetReadMethodForType(t))
-            );
-          }
-          else
-          if (t.IsEnum)
-          {
-            expr = Expression.Assign(
-              assignmentTargetExpression,
-              Expression.Convert(
-                Expression.Call(pReader, Format.GetReadMethodForType(typeof(int))),
-                field.FieldType
-              )
-            );
-          }
-          else // complex type ->  struct or reference
-          {
-            if (!t.IsValueType)//reference type -> read metaHandle
-            {
-              expr = Expression.Assign(
-                assignmentTargetExpression,
-
-                Expression.Convert(
-                  Expression.Call(pSchema,
-                    typeof(TypeSchema).GetMethod(nameof(TypeSchema.ReadRefMetaHandle)),
-                    pReader,
-                    pTReg,
-                    pRefs,
-                    pStreamingContext),
-                  field.FieldType)
-              );
-            }
-            else
-            {
-              expr = Expression.Assign(
-                assignmentTargetExpression,
-                Expression.Convert(
-                  Expression.Call(pSchema,
-                    typeof(TypeSchema).GetMethod(nameof(TypeSchema.Deserialize)),
-                    pReader,
-                    pTReg,
-                    pRefs,
-                    pStreamingContext,
-                    Expression.Constant(field.FieldType)),//valueType
-                  field.FieldType)
-              );
-            }
-          }
-
-          if (assignmentTargetExpression is ParameterExpression expression)//readonly fields
-          {
-            if (Type.IsValueType)//20150405DKh added
+            if (Type.IsValueType) //20150405DKh added
             {
               var vBoxed = Expression.Variable(typeof(object), "vBoxed");
-              var box = Expression.Assign(vBoxed, Expression.TypeAs(instance, typeof(object)));//box the value type
+              var box    = Expression.Assign(vBoxed, Expression.TypeAs(instance, typeof(object))); //box the value type
               var setField = Expression.Call(Expression.Constant(field),
-                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new[] { typeof(object), typeof(object) }),
-                vBoxed, //on boxed struct
-                Expression.Convert(assignmentTargetExpression, typeof(object))
-              );
+                                             typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue),
+                                                                         new[] { typeof(object), typeof(object) }),
+                                             vBoxed, //on boxed struct
+                                             Expression.Convert(assignmentTargetExpression, typeof(object))
+                                            );
               var swap = Expression.Assign(instance, Expression.Unbox(vBoxed, Type));
-              expressions.Add(
-                Expression.Block
-                (new[] { expression, vBoxed },
-                  box,
-                  expr,
-                  setField,
-                  swap
-                )
-              );
+              expressions.Add(Expression.Block(new[] { expression, vBoxed },
+                                               box,
+                                               expr,
+                                               setField,
+                                               swap
+                                              ));
             }
             else
             {
-
               var setField = Expression.Call(Expression.Constant(field),
-                typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new Type[] { typeof(object), typeof(object) }),
-                instance,
-                Expression.Convert(assignmentTargetExpression, typeof(object))
-              );
+                                             typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue),
+                                                                         new Type[] { typeof(object), typeof(object) }),
+                                             instance,
+                                             Expression.Convert(assignmentTargetExpression, typeof(object))
+                                            );
               expressions.Add(Expression.Block(new[] { expression }, expr, setField));
             }
           }
           else
+          {
             expressions.Add(expr);
-        }//foreach
-      }//loop through fields
+          }
+        } //foreach
+      }   //loop through fields
 
 
       expressions.Add(Expression.Assign(pInstance, Expression.Convert(instance, typeof(object))));
 
-      var body = Expression.Block(new[] { instance }, expressions);
-      return Expression.Lambda<DynDeserialize>(body, pSchema, pReader, pTReg, pRefs, pInstance, pStreamingContext).Compile();
+      var body = Expression.Block(new[] {instance}, expressions);
+
+      var lambda = Expression.Lambda<DynDeserialize>(body, pSchema, pReader, pTReg, pRefs, pInstance, pStreamingContext);
+      return lambda.Compile();
+    }
+
+    private Expression BuildFieldDeserializationExpression(Type                t,
+                                                           ParameterExpression pReader,
+                                                           FieldInfo           field,
+                                                           ParameterExpression pSchema,
+                                                           ParameterExpression pTReg,
+                                                           ParameterExpression pRefs,
+                                                           ParameterExpression pStreamingContext)
+    {
+      Expression assignementSourceExpression;
+      if (Format.IsTypeSupported(t))
+      {
+        assignementSourceExpression = Expression.Call(pReader, Format.GetReadMethodForType(t));
+      }
+      else if (t.IsEnum)
+      {
+        assignementSourceExpression = Expression.Convert(Expression.Call(pReader, Format.GetReadMethodForType(typeof(int))),
+                                                         field.FieldType
+                                                        );
+      }
+      else // complex type ->  struct or reference
+      {
+        if (!t.IsValueType) //reference type -> read metaHandle
+        {
+          assignementSourceExpression = Expression.Convert(Expression.Call(pSchema,
+                                                                           typeof(TypeSchema).GetMethod(nameof(TypeSchema
+                                                                                                                .ReadRefMetaHandle)),
+                                                                           pReader,
+                                                                           pTReg,
+                                                                           pRefs,
+                                                                           pStreamingContext),
+                                                           field.FieldType);
+        }
+        else
+        {
+          assignementSourceExpression = Expression.Convert(Expression.Call(pSchema,
+                                                                           typeof(TypeSchema)
+                                                                            .GetMethod(nameof(TypeSchema.Deserialize)),
+                                                                           pReader,
+                                                                           pTReg,
+                                                                           pRefs,
+                                                                           pStreamingContext,
+                                                                           Expression.Constant(field.FieldType)), //valueType
+                                                           field.FieldType);
+        }
+      }
+
+      return assignementSourceExpression;
     }
   }
 }

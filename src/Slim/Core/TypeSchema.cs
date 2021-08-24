@@ -66,7 +66,7 @@ namespace Slim.Core
 
 
       {
-#warning This code block is meant to compensate discrepancies between net451 and coreclr behavior. This code needs to be removed when removing net 451 support 
+#warning This code block is meant to compensate discrepancies between net451 and coreclr behavior with Dictionary<,>. This code needs to be removed when removing net 451 support 
         if (type.IsGenericType &&
             type.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
             type.GetGenericArguments()[0] == typeof(string))

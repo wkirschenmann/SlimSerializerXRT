@@ -12,23 +12,23 @@ namespace TestData.DataModel
   [Serializable]
   public class AllTypesData : IEquatable<AllTypesData>
   {
-    private readonly AllStructQualifiers<bool> m_BoolValues;
-    private readonly AllStructQualifiers<byte> m_ByteValues;
-    private readonly AllStructQualifiers<sbyte> m_SbyteValues;
-    private readonly AllStructQualifiers<short> m_ShortValues;
-    private readonly AllStructQualifiers<ushort> m_UshortValues;
-    private readonly AllStructQualifiers<int> m_IntValues;
-    private readonly AllStructQualifiers<uint> m_UintValues;
-    private readonly AllStructQualifiers<long> m_LongValues;
-    private readonly AllStructQualifiers<ulong> m_UlongValues;
-    private readonly AllStructQualifiers<char> m_CharValues;
-    private readonly AllStructQualifiers<double> m_DoubleValues;
-    private readonly AllStructQualifiers<float> m_FloatValues;
-    private readonly AllStructQualifiers<decimal> m_DecimalValues;
+    private readonly AllStructQualifiers<bool>     m_BoolValues;
+    private readonly AllStructQualifiers<byte>     m_ByteValues;
+    private readonly AllStructQualifiers<sbyte>    m_SbyteValues;
+    private readonly AllStructQualifiers<short>    m_ShortValues;
+    private readonly AllStructQualifiers<ushort>   m_UshortValues;
+    private readonly AllStructQualifiers<int>      m_IntValues;
+    private readonly AllStructQualifiers<uint>     m_UintValues;
+    private readonly AllStructQualifiers<long>     m_LongValues;
+    private readonly AllStructQualifiers<ulong>    m_UlongValues;
+    private readonly AllStructQualifiers<char>     m_CharValues;
+    private readonly AllStructQualifiers<double>   m_DoubleValues;
+    private readonly AllStructQualifiers<float>    m_FloatValues;
+    private readonly AllStructQualifiers<decimal>  m_DecimalValues;
     private readonly AllStructQualifiers<DateTime> m_DateTimeValues;
     private readonly AllStructQualifiers<TimeSpan> m_TimeSpanValues;
-    private readonly AllStructQualifiers<Guid> m_GuidValues;
-    private readonly string m_StringVal;
+    private readonly AllStructQualifiers<Guid>     m_GuidValues;
+    private readonly string                        m_StringVal;
 
     private static unsafe T Initializer<T>(Random r) where T : unmanaged
     {
