@@ -43,7 +43,10 @@ namespace TestData.DataModel
       return obj is AllStructQualifiers<T> otherAsq && Equals(otherAsq);
     }
 
+    // Do not use System.HashCode.Combine because we want a deterministic ans reproducible hashcode computation.
+#pragma warning disable IDE0070 // Use 'System.HashCode'
     public override int GetHashCode()
+#pragma warning restore IDE0070 // Use 'System.HashCode'
     {
       unchecked
       {

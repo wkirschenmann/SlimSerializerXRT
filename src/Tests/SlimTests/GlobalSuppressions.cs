@@ -7,3 +7,5 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: CLSCompliant(true)]
+[assembly: SuppressMessage("Style", "IDE0063:Use simple 'using' statement", Justification = "Fix not compatible with multi-targeting net45", Scope = "namespaceanddescendants", Target = "~N:SlimTests")]
+[assembly: SuppressMessage("Style", "IDE0090:Use 'new(...)'", Justification = "Fix not compatible with multi-targeting net45", Scope = "namespaceanddescendants", Target = "~N:SlimTests")]

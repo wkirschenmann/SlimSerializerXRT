@@ -7,6 +7,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: CLSCompliant(true)]
-[assembly: SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "<Pending>", Scope = "member", Target = "~M:TestData.DataModel.AllStructQualifiers`1.#ctor(System.Int32,System.Func{System.Random,`0})")]
-[assembly: SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "<Pending>", Scope = "member", Target = "~M:TestData.DataModel.AllTypesData.#ctor(System.Int32)")]
-[assembly: SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "<Pending>", Scope = "member", Target = "~M:TestData.DataModel.AllTypesData.Initializer``1(System.Random)~``0")]
+[assembly: SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "No Security Issue since the code is test putpose only", Scope = "namespaceanddescendants", Target = "~N:TestData.DataModel")]
+[assembly: SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Fix not compatible with multi-targeting net45", Scope = "namespaceanddescendants", Target = "~N:TestData.DataModel")]
+[assembly: SuppressMessage("Globalization", "CA1307:Specify StringComparison for clarity", Justification = "No globalization required in test data generators", Scope = "namespaceanddescendants", Target = "~N:TestData.DataModel")]

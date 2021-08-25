@@ -67,7 +67,10 @@ namespace TestData.DataModel
              m_StringVal == other.m_StringVal;
     }
 
+    // Do not use System.HashCode.Combine because we want a deterministic ans reproducible hashcode computation.
+#pragma warning disable IDE0070 // Use 'System.HashCode'
     public override int GetHashCode()
+#pragma warning restore IDE0070 // Use 'System.HashCode'
     {
       var hashCode = -1021751340;
       hashCode = hashCode * -1521134295 + EqualityComparer<AllStructQualifiers<bool>>.Default.GetHashCode(m_BoolValues);

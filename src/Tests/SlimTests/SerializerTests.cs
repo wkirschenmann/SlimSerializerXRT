@@ -12,40 +12,15 @@ using Assert = NUnit.Framework.Assert;
 
 namespace SlimTests
 {
-  public class NullableInitOnlyTests
-  {
-    public Nullable<int> data;
-
-    //void Deserialize(TypeSchema       pSchema,
-    //                 SlimReader       pReader,
-    //                 TypeRegistry     pTReg,
-    //                 RefPool          pRefs,
-    //                 ref object           pInstance,
-    //                 StreamingContext pStreamingContext)
-    //{
-    //  Type instance;
-
-    //  instance = (Type)pInstance;
-
-
-    //}
-
-    static void InitWithReflection()
-    {
-
-    }
-
-  }
-
   public class SerializerTests
   {
     private static readonly Slim.SlimSerializer Serializer = new Slim.SlimSerializer() {SerializeForFramework = true};
     private static readonly AllTypesData AllTypesDataInstance = new AllTypesData(10);
 
     [Test]
-#if NET451    
+#if net452    
     public void MyDataSetFrameworkSerializationTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void MyDataSetCoreSerializationTest()
 #endif //NET50
@@ -67,9 +42,9 @@ namespace SlimTests
 
     [Test]
     [DeploymentItem("MyDataSetFromFramework.slim")] 
-#if NET451    
+#if net452    
     public void MyDataSetFrameworkDeserializationFromFrameworkTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void MyDataSetCoreDeserializationFromFrameworkTest()
 #endif //NET50
@@ -85,9 +60,9 @@ namespace SlimTests
 
     [Test]
     [DeploymentItem("MyDataSetFromCore.slim")] 
-#if NET451    
+#if net452    
     public void MyDataSetFrameworkDeserializationFromCoreTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void MyDataSetCoreDeserializationFromCoreTest()
 #endif //NET50
@@ -102,9 +77,9 @@ namespace SlimTests
     }
 
     [Test]
-#if NET451    
+#if net452    
     public void AllTypesDataFrameworkSerializationTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void AllTypesDataCoreSerializationTest()
 #endif //NET50
@@ -126,9 +101,9 @@ namespace SlimTests
 
     [Test]
     [DeploymentItem("AllTypesDataFromFramework.slim")]
-#if NET451    
+#if net452    
     public void AllTypesDataFrameworkDeserializationFromFrameworkTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void AllTypesDataCoreDeserializationFromFrameworkTest()
 #endif //NET50
@@ -144,9 +119,9 @@ namespace SlimTests
 
     [Test]
     [DeploymentItem("AllTypesDataFromCore.slim")] 
-#if NET451    
+#if net452    
     public void AllTypesDataFrameworkDeserializationFromCoreTest()
-#endif //NET451
+#endif //net452
 #if NET50
     public void AllTypesDataCoreDeserializationFromCoreTest()
 #endif //NET50

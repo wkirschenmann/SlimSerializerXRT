@@ -10,7 +10,7 @@ namespace SlimTests
 {
   namespace Nullable
   {
-    public enum Option
+    public enum Options
     {
       Default = 0,
       Other   = 1,
@@ -18,27 +18,29 @@ namespace SlimTests
 
     public class NullableEnumerableContainer
     {
-      public Option? Data;
+      public Options? Data { get; set; }
     }
 
     public class EnumerableContainer
     {
-      public Option Data;
+      public Options Data { get; set; }
     }
 
-    class NullableIntContainer
+    public class NullableIntContainer
     {
-      public int? Data;
+      public int? Data { get; set; }
     }
 
     public class SerializationTests
     {
       
       [Test]
-      [TestCase(Option.Default)]
-      [TestCase(Option.Other)]
+      [TestCase(Options.Default)]
+      [TestCase(Options.Other)]
+#pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
       [TestCase(null)]
-      public void SerializeAndDeserializeNullableEnumerableTest(Option? data)
+#pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
+      public void SerializeAndDeserializeNullableEnumerableTest(Options? data)
       {
         var test = new NullableEnumerableContainer {Data = data};
 
@@ -58,9 +60,9 @@ namespace SlimTests
 
 
       [Test]
-      [TestCase(Option.Default)]
-      [TestCase(Option.Other)]
-      public void SerializeAndDeserializeEnumerableTest(Option data)
+      [TestCase(Options.Default)]
+      [TestCase(Options.Other)]
+      public void SerializeAndDeserializeEnumerableTest(Options data)
       {
         var test = new EnumerableContainer {Data = data};
 
@@ -78,7 +80,9 @@ namespace SlimTests
 
       [Test]
       [TestCase(42)]
+#pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
       [TestCase(null)]
+#pragma warning restore CS3016 // Arrays as attribute arguments is not CLS-compliant
       [TestCase(0)]
       public void SerializeAndDeserializeNullableIntTest(int? data)
       {

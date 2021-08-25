@@ -2,6 +2,7 @@
 using System.IO;
 using TestData.DataModel;
 
+[assembly: CLSCompliant(true)]
 namespace SerializedDataGenerator
 {
   public static class Filenames
@@ -22,10 +23,10 @@ namespace SerializedDataGenerator
   {
     public static void Main()
     {
-#if NET451
+#if net452
       MyDataSet(Filenames.MyDataSetFromFramework);
       AllTypesData(Filenames.AllTypesDataFromFramework);
-#endif //NET451
+#endif //net452
 #if NETCORE21
       MyDataSet(Filenames.MyDataSetFromCore);
       AllTypesData(Filenames.AllTypesDataFromCore);

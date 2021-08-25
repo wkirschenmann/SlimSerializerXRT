@@ -206,13 +206,15 @@ namespace Slim.Core
 
       if (!serializationForFrameWork) return new VarIntStr(type.AssemblyQualifiedName);
 
-      Contract.Requires(!(type is null), $"{nameof(type)} is not null");
-      Contract.Requires(!(type.AssemblyQualifiedName is null), $"{nameof(type)}.{nameof(Type.AssemblyQualifiedName)} is not null");
-      return new VarIntStr(type.AssemblyQualifiedName.Replace(
-        "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
-        "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-      ));
-
+#warning This code block allows net542 to load data structures from net5
+      {
+        Contract.Requires(!(type is null), $"{nameof(type)} is not null");
+        Contract.Requires(!(type.AssemblyQualifiedName is null), $"{nameof(type)}.{nameof(Type.AssemblyQualifiedName)} is not null");
+        return new VarIntStr(type.AssemblyQualifiedName.Replace(
+                                                                "System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e",
+                                                                "mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+                                                               ));
+      }
     }
 
     #endregion
