@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net451;net5.0</TargetFrameworks>
+    <TargetFrameworks>net452;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
     <Authors>wkirschenmann</Authors>
@@ -53,8 +53,8 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)'=='net451'">
-    <DefineConstants>NET451</DefineConstants>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
+    <DefineConstants>net452</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net451</TargetFrameworks>
+    <TargetFrameworks>net5.0;net452</TargetFrameworks>
     <AutoGenerateBindingRedirects></AutoGenerateBindingRedirects>
     <Authors>wkirschenmann</Authors>
     <Company>ANEO</Company>
